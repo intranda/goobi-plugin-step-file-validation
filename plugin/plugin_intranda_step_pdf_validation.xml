@@ -1,0 +1,53 @@
+<config_plugin>
+	<!-- order of configuration is: 1.) project name and step name matches 2.) 
+		step name matches and project is * 3.) project name matches and step name 
+		is * 4.) project name and step name are * -->
+
+	<config>
+		<!-- which projects to use for (can be more then one, otherwise use *) -->
+		<project>*</project>
+		<step>*</step>
+		<folder>Folder with PDF</folder>
+		<fileFilter>regex with Filter</fileFilter>
+		<profile>testprofile</profile>
+		<success>level that must be reached for success</success>
+		<stepOnError>Upload</stepOnError>
+
+	</config>
+	<global>
+		<profile name="testprofile" >
+			<level>
+				<condition name="nameOfCondition"
+					tool="jhove" 
+					code="errorCode" 
+					xslt="xsltSelector"
+					regEx="regEx" 
+				/>
+			</level>
+			<level>
+				<condition name="nameOfCondition"
+					tool="jhove" 
+					code="errorCode" 
+					xslt="xsltSelector"
+					regEx="regEx" 
+				/>
+			</level>
+			<level>
+				<condition name="nameOfCondition"
+					tool="verapdf" 
+					code="errorCode" 
+					xslt="xsltSelector"
+					regEx="regEx" 
+				/>
+			</level>
+		</profile>
+
+		<tools>
+			<veraPdf configFolder="" />
+			<jhove configFolder="" />
+			<dorid configFolder="" />
+
+		</tools>
+	</global>
+
+</config_plugin>
