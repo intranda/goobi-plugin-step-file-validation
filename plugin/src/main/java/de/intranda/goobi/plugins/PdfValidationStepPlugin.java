@@ -1,5 +1,7 @@
 package de.intranda.goobi.plugins;
 
+import java.nio.file.Path;
+
 /**
  * This file is part of a plugin for Goobi - a Workflow tool for the support of mass digitization.
  *
@@ -20,7 +22,9 @@ package de.intranda.goobi.plugins;
  */
 
 import java.util.HashMap;
+import java.util.List;
 
+import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.goobi.beans.Step;
 import org.goobi.production.enums.PluginGuiType;
@@ -30,6 +34,8 @@ import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IStepPluginVersion2;
 
 import de.sub.goobi.config.ConfigPlugins;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
@@ -47,6 +53,7 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
     @Getter 
     private boolean allowTaskFinishButtons;
     private String returnPath;
+    private List<HashMap<String,Check>> level; 
 
     @Override
     public void initialize(Step step, String returnPath) {
@@ -55,17 +62,15 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
                 
         // read parameters from correct block in configuration file
         SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
-        value = myconfig.getString("value", "default value"); 
-        allowTaskFinishButtons = myconfig.getBoolean("allowTaskFinishButtons", false);
+        HierarchicalConfiguration parentConfig = myconfig.getParent();
+        
+        value = myconfig.getString("value", "default value");
         log.info("PdfValidation step plugin initialized");
     }
 
     @Override
     public PluginGuiType getPluginGuiType() {
         return PluginGuiType.NONE;
-        // return PluginGuiType.PART;
-        // return PluginGuiType.PART_AND_FULL;
-        // return PluginGuiType.NONE;
     }
 
     @Override
@@ -115,4 +120,16 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
         }
         return PluginReturnValue.FINISH;
     }
+
+    @Data
+    @AllArgsConstructor
+    public class Check {
+    	private String name; 
+    	private String tool;
+        private String code;
+        private String xpathSelector;
+        private String regEx;
+    }  
 }
+
+

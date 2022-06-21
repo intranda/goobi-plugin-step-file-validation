@@ -1,22 +1,5 @@
-<config_plugin>
-	<!-- order of configuration is: 1.) project name and step name matches 2.) 
-		step name matches and project is * 3.) project name matches and step name 
-		is * 4.) project name and step name are * -->
-
-	<config>
-		<!-- which projects to use for (can be more then one, otherwise use *) -->
-		<project>*</project>
-		<step>*</step>
-		<folder>Folder with PDF</folder>
-		<fileFilter>regex with Filter</fileFilter>
-		<profile>testprofile</profile>
-		<levelConfigPath></levelConfigPath>
-		<success>2</success>
-		<stepOnError>Upload</stepOnError>
-	</config>
-	
-	<global>
-	<profile name="testprofile" >
+<config>
+		<profile name="testprofile" >
 			<level>
 				<check name="checkVersion"
 					tool="jhove" 
@@ -47,5 +30,4 @@
 			<jhove configFolder="" />
 			<dorid configFolder="" />
 		</tools>
-	</global>
-</config_plugin>
+	</config>
