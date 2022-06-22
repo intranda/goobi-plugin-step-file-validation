@@ -59,13 +59,13 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
     public void initialize(Step step, String returnPath) {
         this.returnPath = returnPath;
         this.step = step;
-                
-        // read parameters from correct block in configuration file
-        SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
-        HierarchicalConfiguration parentConfig = myconfig.getParent();
         
-        value = myconfig.getString("value", "default value");
-        log.info("PdfValidation step plugin initialized");
+        ParseConfiguration cParser = new ParseConfiguration(title,step);
+        // read parameters from correct block in configuration file
+        //SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
+        //HierarchicalConfiguration parentConfig = myconfig.getParent();
+        log.info("PdfValidation step plugin initialized"); 
+        
     }
 
     @Override
@@ -119,17 +119,7 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
             return PluginReturnValue.ERROR;
         }
         return PluginReturnValue.FINISH;
-    }
-
-    @Data
-    @AllArgsConstructor
-    public class Check {
-    	private String name; 
-    	private String tool;
-        private String code;
-        private String xpathSelector;
-        private String regEx;
-    }  
+    } 
 }
 
 

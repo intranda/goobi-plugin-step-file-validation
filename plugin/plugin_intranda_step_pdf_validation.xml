@@ -21,7 +21,7 @@
 				<check name="checkVersion"
 					tool="jhove" 
 					code="errorCode" 
-					xpath="count(//jhove:repInfo/jhove:format)"
+					xpathSelector="count(//jhove:repInfo/jhove:format)"
 					regEx="^1\.[012456]$|^2\.0$" 
 				/>
 			</level>
@@ -29,7 +29,7 @@
 				<check name="jhove validation"
 					tool="jhove" 
 					code="validation_failed" 
-					xpath="//jhove:repInfo/jhove:status"
+					xpathSelector="//jhove:repInfo/jhove:status"
 					regEx="Well-Formed and valid" 
 				/>
 			</level>
@@ -37,15 +37,15 @@
 				<check name="pdf-a validation"
 					tool="verapdf" 
 					code="pdfa_validation_failed" 
-					xpath="xpathSelector"
+					xpathSelector="xpathSelector"
 					regEx="regEx" 
 				/>
 			</level>
 		</profile>
 		<tools>
-			<veraPdf configFolder="" />
-			<jhove configFolder="" />
-			<dorid configFolder="" />
+			<tool name="droid" configFolder="/opt/digiverso/tools/droid" />
+			<tool name="verapdf" configFolder="/opt/digiverso/tools/verapdf" />
+			<tool name="jhove" configFolder="/opt/digiverso/jhove" />
 		</tools>
 	</global>
 </config_plugin>
