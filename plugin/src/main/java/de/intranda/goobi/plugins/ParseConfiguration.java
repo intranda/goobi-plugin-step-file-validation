@@ -1,6 +1,7 @@
 package de.intranda.goobi.plugins;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.xpath.XPath;
@@ -19,7 +20,7 @@ import de.sub.goobi.helper.Helper;
 public class ParseConfiguration {
 	private XMLConfiguration xmlConfig;
 	private HierarchicalConfiguration parentConfig;
-	private List<ToolConfiguration> toolConfigurations;
+	private HashMap<String,ToolConfiguration> toolConfigurations;
 	private List<List<Check>> ingestLevels;
 
 	public ParseConfiguration(String title, Step step) {
@@ -78,16 +79,17 @@ public class ParseConfiguration {
 		}
 	}
 
-	private List<ToolConfiguration> readToolConfigurations() {
+	private HashMap<String,ToolConfiguration> readToolConfigurations() {
 		List<HierarchicalConfiguration> tools = this.parentConfig.configurationsAt("global/tools/tool");
-		List<ToolConfiguration> toolConfigurations = new ArrayList<ToolConfiguration>();
+		HashMap<String,ToolConfiguration> Configurations = new HashMap();
 		for (HierarchicalConfiguration node : tools) {
 			String name = node.getString("@name", null);
-			String configFolder = node.getString("@configFolder");
-			ToolConfiguration tc = new ToolConfiguration(name, configFolder);
-			toolConfigurations.add(tc);
+			String cmd = node.getString("@cmd", null);
+			boolean stdout = node.getBoolean("@stdout", false);
+			ToolConfiguration tc = new ToolConfiguration(name, cmd, stdout);
+			Configurations.put(name,tc);
 		}
-		return toolConfigurations;
+		return Configurations;
 	}
 
 //	public SubnodeConfiguration getProjectConfiguration(Step step) {

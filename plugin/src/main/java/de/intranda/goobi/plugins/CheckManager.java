@@ -1,84 +1,108 @@
 package de.intranda.goobi.plugins;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 
+import org.goobi.beans.Process;
+import org.jdom2.Document;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
+
+import de.sub.goobi.helper.StorageProvider;
+import de.sub.goobi.helper.exceptions.DAOException;
+import de.sub.goobi.helper.exceptions.SwapException;
+import edu.harvard.hul.ois.jhove.Module;
+import edu.harvard.hul.ois.jhove.App;
+import edu.harvard.hul.ois.jhove.JhoveBase;
+import edu.harvard.hul.ois.jhove.JhoveException;
+import edu.harvard.hul.ois.jhove.OutputHandler;
+
 public class CheckManager {
-
-	private List<ToolConfiguration> toolConfigurations;
+	
+	private HashMap<String, ToolConfiguration> toolConfigurations;
 	private List<List<Check>> ingestLevels;
-	private String jhoveConfigurationFile;
-	private String verpdfConfigurationFile;
 
+	private Path outputPath;
+	private List<Path> pdfsInFolder;
 	// mayber refactor later
 
-	public CheckManager() {
+	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,
+			Process process) throws IOException, InterruptedException, SwapException, DAOException {
 		// readConfiguration
+
+		List<Path> pdfsInFolder = new ArrayList<>();
+		// TODO implement FilenameFilter here!
+		this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles(process.getSourceDirectory()));
+		this.outputPath = Paths.get(process.getProcessDataDirectory(), "validation",
+				System.currentTimeMillis() + "_xls");
 	}
 
-	public CheckManager(List<ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels) {
+	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels) {
 		this.toolConfigurations = toolsConfigurations;
 		this.ingestLevels = ingestLevels;
+		// pdfsfolder
 	}
 
-	public boolean runChecks(int targetLevel, Path file) {
-		int reachedLevel = -1;
-		boolean success = true;
-		for (int i = 0; i < ingestLevels.size(); i++) {
-			for (Check check : ingestLevels.get(i)) {
-				if (!runcheck(check, file)) {
-					success = false;
+	private HashMap<String, List<SimpleEntry<String, String>>> runTools() {
+		HashMap<String, List<SimpleEntry<String, String>>> resultFiles = new HashMap();
+		for (String toolName : this.toolConfigurations.keySet()) {
+			List<SimpleEntry<String, String>> results = new ArrayList();
+			for (Path pdfFile : this.pdfsInFolder) {
+				ToolConfiguration tc = this.toolConfigurations.get(toolName);
+				ToolRunner tr = new ToolRunner(tc, outputPath);
+				results.add(tr.run(pdfFile));
+			}
+			resultFiles.put(toolName, results);
+		}
+		return resultFiles;
+	}
+
+	public boolean runChecks(int targetLevel, List<Path> files) {
+		HashMap<String, List<SimpleEntry<String, String>>> results = runTools();
+
+		SAXBuilder jdomBuilder = new SAXBuilder();
+		Document jdomDocument;
+		boolean error = false;
+
+		for (String toolName : results.keySet()) {
+			List<SimpleEntry<String, String>> resultFiles = results.get(toolName);
+
+			for (SimpleEntry<String, String> resultFile : resultFiles) {
+				try {
+					jdomDocument = jdomBuilder.build(resultFile.getValue());
+					for (int level = 0; level < ingestLevels.size(); level++) {
+						List<Check> checks = ingestLevels.get(level);
+						checks.stream().filter(check -> check.getTool().equals(toolName)).forEach(check -> {
+//							if  !check  (jdomDocument) {
+//								error = true;
+								//add Error to Reportobject
+								
+//								
+//							}
+						});
+					}
+
+				} catch (JDOMException | IOException | IllegalStateException e) {
+					//TODO  handleException(e);
+					
 				}
 			}
-			if (success) {
-				reachedLevel = i;
-			}
-		}
-		return true;
-	}
-
-	private boolean runcheck(Check check, Path file) {
-		//TODO generate outputfile 
-		
-		//run tests against output
-		//maybe add switch that generates output even if it's not needed here
-		
-		switch (check.getTool()) {
-		case "verapdf":
-			break;
-		case "jhove":
-			break;
 		}
 		
-		// TODO Auto-generated method stub
 		return false;
 	}
 
-	// maybe this should be done earlier
-	private boolean checkToolConfiguration() {
-		boolean success = true;
-		for (ToolConfiguration tc : toolConfigurations) {
-			switch (tc.getName()) {
-			case "verapdf":
-				if (Files.exists(Paths.get(tc.getPath()))) {
-					this.verpdfConfigurationFile = tc.getPath();
-				} else {
-					success = false;
-				}
+	private boolean runcheck(Check check, Path file) {
 
-				break;
-			case "jhove":
-				if (Files.exists(Paths.get(tc.getPath()))) {
-					this.jhoveConfigurationFile = tc.getPath();
-				} else {
-					success = false;
-				}
-				break;
-			}
-		}
-		return success;
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

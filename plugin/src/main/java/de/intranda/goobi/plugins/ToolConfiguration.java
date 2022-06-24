@@ -7,5 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class ToolConfiguration {
 	private String name;
-	private String path;
+	private String cmd;
+	private boolean stdout;
 }
