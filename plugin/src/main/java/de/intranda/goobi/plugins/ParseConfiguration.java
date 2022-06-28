@@ -16,14 +16,17 @@ import org.goobi.beans.Step;
 
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.Helper;
+import lombok.Getter;
 
 public class ParseConfiguration {
 	private XMLConfiguration xmlConfig;
 	private HierarchicalConfiguration parentConfig;
+	@Getter
 	private HashMap<String,ToolConfiguration> toolConfigurations;
+	@Getter
 	private List<List<Check>> ingestLevels;
 
-	public ParseConfiguration(String title, Step step) {
+	public ParseConfiguration(String title, Step step) throws IllegalArgumentException {
 		SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
 		String profile = myconfig.getString("profileName", null);
 		this.parentConfig = myconfig.getParent();
@@ -45,7 +48,7 @@ public class ParseConfiguration {
 //        
 //    }
 
-	private List<List<Check>> readProfile(String profile) throws IllegalArgumentException {
+	public List<List<Check>> readProfile(String profile) throws IllegalArgumentException {
 		SubnodeConfiguration profileNode = this.parentConfig.configurationAt("//profile[@name='" + profile + "']" );
 		List<HierarchicalConfiguration> level = profileNode.configurationsAt("level");
 		List<List<Check>> ingestLevels = new ArrayList<List<Check>>();
@@ -57,8 +60,8 @@ public class ParseConfiguration {
 				String name = checkNode.getString("@name", null);
 				String code = checkNode.getString("@code", null);
 				String xpathSelector = checkNode.getString("@xpathSelector", null);
-				if (validateXPathSelector(xpathSelector))
-					throw new IllegalArgumentException("The xpath-Expression " + xpathSelector + " is invalid!");
+				//if (validateXPathSelector(xpathSelector))
+				//	throw new IllegalArgumentException("The xpath-Expression " + xpathSelector + " is invalid!");
 				String regEx = checkNode.getString("@regEx", null);
 				Check check = new Check(name, tool, code, xpathSelector, regEx);
 				checkList.add(check);
@@ -79,7 +82,7 @@ public class ParseConfiguration {
 		}
 	}
 
-	private HashMap<String,ToolConfiguration> readToolConfigurations() {
+	public HashMap<String,ToolConfiguration> readToolConfigurations() {
 		List<HierarchicalConfiguration> tools = this.parentConfig.configurationsAt("global/tools/tool");
 		HashMap<String,ToolConfiguration> Configurations = new HashMap();
 		for (HierarchicalConfiguration node : tools) {

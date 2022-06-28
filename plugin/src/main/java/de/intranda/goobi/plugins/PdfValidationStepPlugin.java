@@ -1,5 +1,6 @@
 package de.intranda.goobi.plugins;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 /**
@@ -26,7 +27,9 @@ import java.util.List;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
+import org.goobi.beans.Process;
 import org.goobi.beans.Step;
+import org.goobi.production.enums.LogType;
 import org.goobi.production.enums.PluginGuiType;
 import org.goobi.production.enums.PluginReturnValue;
 import org.goobi.production.enums.PluginType;
@@ -34,6 +37,10 @@ import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IStepPluginVersion2;
 
 import de.sub.goobi.config.ConfigPlugins;
+import de.sub.goobi.helper.Helper;
+import de.sub.goobi.helper.exceptions.DAOException;
+import de.sub.goobi.helper.exceptions.SwapException;
+import de.sub.goobi.persistence.managers.ProcessManager;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -53,7 +60,9 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
     @Getter 
     private boolean allowTaskFinishButtons;
     private String returnPath;
-    private List<HashMap<String,Check>> level; 
+    private List<List<Check>> levels; 
+    private HashMap<String,ToolConfiguration> tools;
+    private Process process;
 
     @Override
     public void initialize(Step step, String returnPath) {
@@ -61,10 +70,14 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
         this.step = step;
         
         ParseConfiguration cParser = new ParseConfiguration(title,step);
-        // read parameters from correct block in configuration file
-        //SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
-        //HierarchicalConfiguration parentConfig = myconfig.getParent();
-        log.info("PdfValidation step plugin initialized"); 
+        this.tools = cParser.getToolConfigurations();
+        this.levels = cParser.getIngestLevels();
+        if (tools.size()>0&&levels.size()>0) {
+        	log.info("PdfValidation step plugin initialized"); 
+        }else {
+        	log.info("Error initializing Plugin");
+        	 Helper.addMessageToProcessLog(step.getProcessId(), LogType.DEBUG, "Error reading Configuration File");
+        }     
         
     }
 
@@ -112,7 +125,14 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
     @Override
     public PluginReturnValue run() {
         boolean successful = true;
-        // your logic goes here
+        this.process= ProcessManager.getProcessById(step.getProcessId());
+        try {
+			CheckManager CManager= new CheckManager(tools, levels, this.process);
+			CManager.runChecks(1);
+		} catch (IOException | InterruptedException | SwapException | DAOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         
         log.info("PdfValidation step plugin executed");
         if (!successful) {

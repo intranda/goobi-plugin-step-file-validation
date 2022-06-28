@@ -16,6 +16,7 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
 import de.sub.goobi.helper.StorageProvider;
+import de.sub.goobi.helper.StorageProviderInterface;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import edu.harvard.hul.ois.jhove.Module;
@@ -30,17 +31,19 @@ public class CheckManager {
 	private List<List<Check>> ingestLevels;
 
 	private Path outputPath;
-	private List<Path> pdfsInFolder;
+	private List<Path> pdfsInFolder = new ArrayList<>();
 	// mayber refactor later
 
 	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,
 			Process process) throws IOException, InterruptedException, SwapException, DAOException {
 		// readConfiguration
 
-		List<Path> pdfsInFolder = new ArrayList<>();
 		// TODO implement FilenameFilter here!
-		this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles(process.getSourceDirectory()));
-		this.outputPath = Paths.get(process.getProcessDataDirectory(), "validation",
+		//this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles(process.getSourceDirectory()));
+		this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles("/opt/digiverso/pdf"));
+		//TODO fix this
+		String test = process.getProcessDataDirectory();
+		this.outputPath = Paths.get(test, "validation",
 				System.currentTimeMillis() + "_xls");
 	}
 
@@ -50,51 +53,51 @@ public class CheckManager {
 		// pdfsfolder
 	}
 
-	private HashMap<String, List<SimpleEntry<String, String>>> runTools() {
+	private HashMap<String, List<SimpleEntry<String, String>>> runTools() throws IOException, InterruptedException {
 		HashMap<String, List<SimpleEntry<String, String>>> resultFiles = new HashMap();
 		for (String toolName : this.toolConfigurations.keySet()) {
 			List<SimpleEntry<String, String>> results = new ArrayList();
 			for (Path pdfFile : this.pdfsInFolder) {
 				ToolConfiguration tc = this.toolConfigurations.get(toolName);
 				ToolRunner tr = new ToolRunner(tc, outputPath);
-				results.add(tr.run(pdfFile));
+				results.add(tr.runTool(pdfFile));
 			}
 			resultFiles.put(toolName, results);
 		}
 		return resultFiles;
 	}
 
-	public boolean runChecks(int targetLevel, List<Path> files) {
+	public boolean runChecks(int targetLevel) throws IOException, InterruptedException {
 		HashMap<String, List<SimpleEntry<String, String>>> results = runTools();
+		
+//		SAXBuilder jdomBuilder = new SAXBuilder();
+//		Document jdomDocument;
+//		boolean error = false;
+//
+//		for (String toolName : results.keySet()) {
+//			List<SimpleEntry<String, String>> resultFiles = results.get(toolName);
 
-		SAXBuilder jdomBuilder = new SAXBuilder();
-		Document jdomDocument;
-		boolean error = false;
-
-		for (String toolName : results.keySet()) {
-			List<SimpleEntry<String, String>> resultFiles = results.get(toolName);
-
-			for (SimpleEntry<String, String> resultFile : resultFiles) {
-				try {
-					jdomDocument = jdomBuilder.build(resultFile.getValue());
-					for (int level = 0; level < ingestLevels.size(); level++) {
-						List<Check> checks = ingestLevels.get(level);
-						checks.stream().filter(check -> check.getTool().equals(toolName)).forEach(check -> {
+//			for (SimpleEntry<String, String> resultFile : resultFiles) {
+//				try {
+//					jdomDocument = jdomBuilder.build(resultFile.getValue());
+//					for (int level = 0; level < ingestLevels.size(); level++) {
+//						List<Check> checks = ingestLevels.get(level);
+//						checks.stream().filter(check -> check.getTool().equals(toolName)).forEach(check -> {
 //							if  !check  (jdomDocument) {
 //								error = true;
-								//add Error to Reportobject
+								//add negative Status
 								
 //								
 //							}
-						});
-					}
-
-				} catch (JDOMException | IOException | IllegalStateException e) {
-					//TODO  handleException(e);
-					
-				}
-			}
-		}
+//						});
+//					}
+//
+//				} catch (JDOMException | IOException | IllegalStateException e) {
+//					//TODO  handleException(e);
+//					
+//				}
+//			}
+//		}
 		
 		return false;
 	}

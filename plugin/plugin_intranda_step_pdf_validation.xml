@@ -43,7 +43,7 @@
 		</profile>
 		<tools>
 			<tool name="verapdf" cmd="java -Dapp.home=&#34;/opt/digiverso/pdf/verapdf &#34; -jar verapdf.jar --format xml -f {pv.filename}" stdout="true" />
-			<tool name="jhove" cmd="/opt/digiverso/pdf/jhove/jhove -c /opt/digiverso/pdf/jhove/config.xml {pv.filename}" stdout="true" />
+			<tool name="jhove" cmd="/opt/digiverso/pdf/jhove/jhove -h XML -m PDF-hul -o {pv.outputpath} {pv.filename}" stdout="true" />
 			<!-- for tools that need the path of the outputfile {pv.outputFilename} -->
 		</tools>
 	</global>
