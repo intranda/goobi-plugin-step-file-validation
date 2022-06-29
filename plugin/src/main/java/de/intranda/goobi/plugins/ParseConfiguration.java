@@ -30,8 +30,9 @@ public class ParseConfiguration {
 		SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
 		String profile = myconfig.getString("profileName", null);
 		this.parentConfig = myconfig.getParent();
-		this.ingestLevels = readProfile(profile);
 		this.toolConfigurations = readToolConfigurations();
+		this.ingestLevels = readProfile(profile);
+		
 	}
 
 //	public ParseConfiguration (String filename) {
@@ -63,7 +64,8 @@ public class ParseConfiguration {
 				//if (validateXPathSelector(xpathSelector))
 				//	throw new IllegalArgumentException("The xpath-Expression " + xpathSelector + " is invalid!");
 				String regEx = checkNode.getString("@regEx", null);
-				Check check = new Check(name, tool, code, xpathSelector, regEx);
+				String xmlNameSpace = this.toolConfigurations.get(tool).getXmlNamespace();
+				Check check = new Check(name, tool, code, xpathSelector, regEx, xmlNameSpace);
 				checkList.add(check);
 			}
 			ingestLevels.add(checkList);
@@ -89,7 +91,8 @@ public class ParseConfiguration {
 			String name = node.getString("@name", null);
 			String cmd = node.getString("@cmd", null);
 			boolean stdout = node.getBoolean("@stdout", false);
-			ToolConfiguration tc = new ToolConfiguration(name, cmd, stdout);
+			String xmlNamespace = node.getString("@xmlNamespace",null);
+			ToolConfiguration tc = new ToolConfiguration(name, cmd, stdout, xmlNamespace);
 			Configurations.put(name,tc);
 		}
 		return Configurations;
