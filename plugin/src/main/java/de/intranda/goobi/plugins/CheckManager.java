@@ -67,12 +67,10 @@ public class CheckManager {
 
 	public boolean runChecks(int targetLevel) throws IOException, InterruptedException {
 		HashMap<String, List<SimpleEntry<String, String>>> results = runTools();
-		
 		SAXBuilder jdomBuilder = new SAXBuilder();
+		HashMap<Integer,HashMap<String, ReportEntry>> reports = new HashMap();	
 		for (String toolName : results.keySet()) {
-			List<SimpleEntry<String, String>> resultFiles = results.get(toolName);
-			
-			HashMap<Integer,HashMap<String, ReportEntry>> reports = new HashMap();			
+			List<SimpleEntry<String, String>> resultFiles = results.get(toolName);	
 			for (SimpleEntry<String, String> resultFile : resultFiles) {
 				try {
 					//TODO check if file exists
@@ -81,6 +79,7 @@ public class CheckManager {
 						List<Check> checks = ingestLevels.get(level);
 						
 						//needed because we use this variable in the lambda expression
+						
 						int levelenclosing= level;
 						checks.stream().filter(check -> check.getTool().equals(toolName)).forEach(check -> {
 							ReportEntry re = check.check(jdomDocument);
@@ -90,7 +89,6 @@ public class CheckManager {
 									reports.put(levelenclosing, ReportHashMapCurrentLevel);
 								}
 								ReportHashMapCurrentLevel.put(check.getName(),re);
-								
 						});
 					}
 

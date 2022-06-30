@@ -28,15 +28,17 @@ public class Check {
 	@Getter
 	private String regEx;
 
-	public Check(String name, String tool, String code, String xpathSelector, String regEx, String xmlNameSpace) {
+	public Check(String name, String tool, String code, String xpathSelector, String regEx, Namespace namespace) {
 
 		this.name = name;
 		this.tool = tool;
 		this.code = code;
 		this.xpathSelector = xpathSelector;
-		String nameSpaceName="jhove";
-		xpath = XPathFactory.instance().compile(xpathSelector,Filters.fpassthrough(),null,Namespace.getNamespace(nameSpaceName,xmlNameSpace));
-
+		if (namespace == null) {
+			xpath = XPathFactory.instance().compile(xpathSelector);
+		}else {
+			xpath = XPathFactory.instance().compile(xpathSelector,Filters.fpassthrough(),null,namespace);
+		}
 		// TODO validate regEx
 		this.regEx = regEx;
 	}

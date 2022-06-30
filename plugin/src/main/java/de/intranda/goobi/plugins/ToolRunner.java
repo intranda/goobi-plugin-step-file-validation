@@ -1,6 +1,14 @@
 package de.intranda.goobi.plugins;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +43,17 @@ public class ToolRunner {
 				.replace("{pv.inputFile}", pdfFile.toString());
 
 		if (toolConfiguration.isStdout()) {
+			ToolProcess = Runtime.getRuntime().exec(cmd);
+			String line;
+			BufferedReader input = new BufferedReader(new InputStreamReader(ToolProcess.getInputStream()));
+			File reportfile = new File(fOutputPath.toString());
+			BufferedWriter writer = Files.newBufferedWriter(fOutputPath, StandardCharsets.UTF_8);
+			  while ((line = input.readLine()) != null) {
+			    writer.write(line);
+			    writer.newLine();
+			  }
+			  writer.close();
+			  input.close();
 			// --> reroute stdout to file
 		} else {
 			// ProcessBuilder builder = new ProcessBuilder(cmd);

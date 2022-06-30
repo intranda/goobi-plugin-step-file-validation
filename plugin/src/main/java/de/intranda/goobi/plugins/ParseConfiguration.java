@@ -13,6 +13,7 @@ import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.goobi.beans.Step;
+import org.jdom2.Namespace;
 
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.Helper;
@@ -25,10 +26,13 @@ public class ParseConfiguration {
 	private HashMap<String,ToolConfiguration> toolConfigurations;
 	@Getter
 	private List<List<Check>> ingestLevels;
+	@Getter
+	private HashMap<String, Namespace> namespaces;
 
 	public ParseConfiguration(String title, Step step) throws IllegalArgumentException {
 		SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
 		String profile = myconfig.getString("profileName", null);
+		this.namespaces = readNamespaces(); 
 		this.parentConfig = myconfig.getParent();
 		this.toolConfigurations = readToolConfigurations();
 		this.ingestLevels = readProfile(profile);
@@ -48,7 +52,19 @@ public class ParseConfiguration {
 //        xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
 //        
 //    }
+	
+	public HashMap<String,Namespace> readNamespaces () {
+		List<HierarchicalConfiguration> nodes = this.parentConfig.configurationsAt("global/namespaces/namespace");
+		HashMap<String,Namespace> namespaces = new HashMap();
+		for (HierarchicalConfiguration node : nodes) {
+			String name = node.getString("@name", null);
+			String uri = node.getString("@uri", null);
 
+			Namespace ns = Namespace.getNamespace(name, uri);
+			namespaces.put(name,ns);
+		}
+		return namespaces;
+	}
 	public List<List<Check>> readProfile(String profile) throws IllegalArgumentException {
 		SubnodeConfiguration profileNode = this.parentConfig.configurationAt("//profile[@name='" + profile + "']" );
 		List<HierarchicalConfiguration> level = profileNode.configurationsAt("level");
@@ -61,11 +77,21 @@ public class ParseConfiguration {
 				String name = checkNode.getString("@name", null);
 				String code = checkNode.getString("@code", null);
 				String xpathSelector = checkNode.getString("@xpathSelector", null);
-				//if (validateXPathSelector(xpathSelector))
-				//	throw new IllegalArgumentException("The xpath-Expression " + xpathSelector + " is invalid!");
+				if (validateXPathSelector(xpathSelector))
+					throw new IllegalArgumentException("The xpath-Expression " + xpathSelector + " is invalid!");
 				String regEx = checkNode.getString("@regEx", null);
-				String xmlNameSpace = this.toolConfigurations.get(tool).getXmlNamespace();
-				Check check = new Check(name, tool, code, xpathSelector, regEx, xmlNameSpace);
+				String xmlNamespace = node.getString("@xmlNamespace",null);
+				//maybe it's handy to be able to redefine the namespace in the Check;
+				//so we add this attribute
+				if (xmlNamespace==null) {
+					xmlNamespace =  this.toolConfigurations.get(tool).getXmlNamespace();
+				} 
+				Namespace namespace =null;
+				if (xmlNamespace!=null) {
+					namespace = this.namespaces.get(xmlNamespace);
+				}
+				
+				Check check = new Check(name, tool, code, xpathSelector, regEx, namespace);
 				checkList.add(check);
 			}
 			ingestLevels.add(checkList);

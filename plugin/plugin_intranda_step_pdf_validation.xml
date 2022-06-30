@@ -17,11 +17,11 @@
 	<global>
 	<profile name="testprofile" >
 			<level>
-				<check name="checkVersion"
-					tool="jhove" 
-					code="errorCode" 
-					xpathSelector="count(//jhove:repInfo/jhove:format)"
-					regEx="^1\.[012456]$|^2\.0$" 
+				<check name="hasfeaturereport"
+					tool="verapdf" 
+					code="isPdfa" 
+					xpathSelector="//report/batchSummary/featureReports"
+					regEx="1" 
 				/>
 			</level>
 			<level>
@@ -42,9 +42,17 @@
 			</level>
 		</profile>
 		<tools>
-			<tool name="verapdf" cmd="java -Dapp.home=&#34;/opt/digiverso/pdf/verapdf &#34; -jar verapdf.jar --format xml -f {pv.filename}" stdout="true" />
-			<tool name="jhove" cmd="/opt/digiverso/pdf/jhove/jhove -h XML -m PDF-hul -o {pv.outputpath} {pv.filename}" stdout="true" />
+			<tool name="verapdf" 
+				cmd="/home/michael/verapdf/verapdf --format mrr {pv.inputFile}"
+				stdout="true"
+			 />
+			<tool name="jhove"
+				 cmd="/opt/digiverso/pdf/jhove/jhove -h MRR -m PDF-hul -o {pv.outputpath} {pv.filename}" 
+				 stdout="false" />
 			<!-- for tools that need the path of the outputfile {pv.outputFilename} -->
 		</tools>
+		<namespaces>
+			<namespace name="jhove" uri="http://schema.openpreservation.org/ois/xml/ns/jhove" />
+		</namespaces>
 	</global>
 </config_plugin>
