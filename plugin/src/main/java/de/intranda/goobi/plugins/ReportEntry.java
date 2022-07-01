@@ -5,16 +5,18 @@ import lombok.Getter;
 import lombok.Setter;
 public class ReportEntry {
 	@Getter @Setter
-	private Check check;
+	private String checkName;
 	@Getter @Setter
 	private String value;
 	@Getter @Setter
 	private ReportEntryStatus status;
+	private String message;
 
 	public ReportEntry (Check check, Object value, ReportEntryStatus res) {
-		this.check = check;
+		this.checkName = check.getName();
 		this.status = res;
 		this.value = (value==null)? "":(String)value;
+		this.message = (res!=ReportEntryStatus.SUCCESS)? check.getCode(): "Check passed!";
 	}
 	
 }

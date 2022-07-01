@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.goobi.beans.Process;
 import org.jdom2.Document;
@@ -42,7 +43,7 @@ public class CheckManager {
 		this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles("/opt/digiverso/pdf"));
 		// TODO fix this
 		String test = process.getProcessDataDirectory();
-		this.outputPath = Paths.get(test, "validation", System.currentTimeMillis() + "_xls");
+		this.outputPath = Paths.get(test, "validation", System.currentTimeMillis() + "_xml");
 	}
 
 	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels) {
@@ -51,54 +52,61 @@ public class CheckManager {
 		// pdfsfolder
 	}
 
-	private HashMap<String, List<SimpleEntry<String, String>>> runTools() throws IOException, InterruptedException {
-		HashMap<String, List<SimpleEntry<String, String>>> resultFiles = new HashMap();
-		for (String toolName : this.toolConfigurations.keySet()) {
-			List<SimpleEntry<String, String>> results = new ArrayList();
-			for (Path pdfFile : this.pdfsInFolder) {
-				ToolConfiguration tc = this.toolConfigurations.get(toolName);
-				ToolRunner tr = new ToolRunner(tc, outputPath);
-				results.add(tr.runTool(pdfFile));
-			}
-			resultFiles.put(toolName, results);
-		}
-		return resultFiles;
+	private SimpleEntry<String, String> runTool(String toolName, Path pdfFile)
+			throws IOException, InterruptedException {
+		ToolConfiguration tc = this.toolConfigurations.get(toolName);
+		ToolRunner tr = new ToolRunner(tc, outputPath);
+		return tr.runTool(pdfFile);
 	}
 
-	public boolean runChecks(int targetLevel) throws IOException, InterruptedException {
-		HashMap<String, List<SimpleEntry<String, String>>> results = runTools();
+	public Report runChecks(int targetLevel, Path pathToFile) {
+		int reachedLevel = -1;
+		HashMap<String, SimpleEntry<String, String>> reportFiles = new HashMap();
 		SAXBuilder jdomBuilder = new SAXBuilder();
-		HashMap<Integer,HashMap<String, ReportEntry>> reports = new HashMap();	
-		for (String toolName : results.keySet()) {
-			List<SimpleEntry<String, String>> resultFiles = results.get(toolName);	
-			for (SimpleEntry<String, String> resultFile : resultFiles) {
-				try {
-					//TODO check if file exists
-					Document jdomDocument = jdomBuilder.build(resultFile.getValue());
-					for (int level = 0; level < ingestLevels.size(); level++) {
-						List<Check> checks = ingestLevels.get(level);
-						
-						//needed because we use this variable in the lambda expression
-						
-						int levelenclosing= level;
-						checks.stream().filter(check -> check.getTool().equals(toolName)).forEach(check -> {
-							ReportEntry re = check.check(jdomDocument);
-								HashMap<String,ReportEntry> ReportHashMapCurrentLevel = reports.get(levelenclosing);
-								if (ReportHashMapCurrentLevel==null) {
-									ReportHashMapCurrentLevel= new HashMap<String, ReportEntry>();
-									reports.put(levelenclosing, ReportHashMapCurrentLevel);
-								}
-								ReportHashMapCurrentLevel.put(check.getName(),re);
-						});
-					}
-
-				} catch (JDOMException | IOException | IllegalStateException e) {
-					//TODO  handleException(e);
-					
+		List<ReportEntry> reportEntries = new ArrayList<>();
+		for (int level = 0; level < ingestLevels.size(); level++) {
+			List<Check> checks = ingestLevels.get(level);
+			HashMap<String, List<Check>> ChecksGroupedByTool = new HashMap();
+			for (Check check : checks) {
+				String tool = check.getTool();
+				List<Check> groupedChecks = ChecksGroupedByTool.get(tool);
+				if (groupedChecks == null) {
+					groupedChecks = new ArrayList();
+					ChecksGroupedByTool.put(tool, groupedChecks);
 				}
+				groupedChecks.add(check);
+			}
+			try {
+				for (String toolName : ChecksGroupedByTool.keySet()) {
+					SimpleEntry<String, String> reportFile = reportFiles.get(toolName);
+					if (reportFile == null) {
+
+						runTool(toolName, pathToFile);
+					}
+					Document jdomDocument;
+					jdomDocument = jdomBuilder.build(reportFile.getValue());
+
+					for (Check check : ChecksGroupedByTool.get(toolName)) {
+						ReportEntry re = check.check(jdomDocument);
+						reportEntries.add(re);
+						if (re.getStatus() != ReportEntryStatus.SUCCESS) {  
+							return new Report(reachedLevel,check.getCode(),reportEntries);
+						}		
+					}
+				}
+				reachedLevel=level;
+			} catch (IOException | JDOMException | InterruptedException e) {
+				return new Report(reachedLevel,"Error running tool or reading report file",reportEntries);
 			}
 		}
-		
-		return false;
+		return new Report(reachedLevel,null,reportEntries);
+	}
+
+	public List<Report> runChecks(int targetLevel) throws IOException, InterruptedException {
+		List<Report> reports = new ArrayList<>();
+		for (Path pdfFile : this.pdfsInFolder) {
+			reports.add(runChecks(targetLevel,pdfFile));
 		}
+		return reports;
+	}
 }
