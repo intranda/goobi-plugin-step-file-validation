@@ -31,16 +31,25 @@ public class CheckManager {
 	// mayber refactor later
 
 	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,
-			Process process) throws IOException, InterruptedException, SwapException, DAOException {
+			Process process, String fileFilter) throws IOException, InterruptedException, SwapException, DAOException {
 
 		this.toolConfigurations = toolsConfigurations;
 		this.ingestLevels = ingestLevels;
 
 		// readConfiguration
-
+	
 		// TODO implement FilenameFilter here!
-		// this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles(process.getSourceDirectory()));
-		this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles("/opt/digiverso/pdf"));
+		//this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles(process.getSourceDirectory()));
+		this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles("/opt/digiverso/pdf", (path)-> {
+			try {
+			if (path.getFileName().toString().matches(fileFilter)) {
+			
+				return !Files.isHidden(path)&&Files.isRegularFile(path)&&Files.isReadable(path);
+
+			}else return false;
+			} catch (IOException e) {
+				return false;
+			}}));
 		// TODO fix this
 		String test = process.getProcessDataDirectory();
 		this.outputPath = Paths.get(test, "validation", System.currentTimeMillis() + "_xml");
@@ -80,8 +89,7 @@ public class CheckManager {
 				for (String toolName : ChecksGroupedByTool.keySet()) {
 					SimpleEntry<String, String> reportFile = reportFiles.get(toolName);
 					if (reportFile == null) {
-
-						runTool(toolName, pathToFile);
+						reportFile= runTool(toolName, pathToFile);
 					}
 					Document jdomDocument;
 					jdomDocument = jdomBuilder.build(reportFile.getValue());
@@ -89,23 +97,23 @@ public class CheckManager {
 					for (Check check : ChecksGroupedByTool.get(toolName)) {
 						ReportEntry re = check.check(jdomDocument);
 						reportEntries.add(re);
-						if (re.getStatus() != ReportEntryStatus.SUCCESS) {  
-							return new Report(reachedLevel,check.getCode(),reportEntries);
-						}		
+						if (re.getStatus() != ReportEntryStatus.SUCCESS) {
+							return new Report(reachedLevel, check.getCode(), reportEntries);
+						}
 					}
 				}
-				reachedLevel=level;
+				reachedLevel = level;
 			} catch (IOException | JDOMException | InterruptedException e) {
-				return new Report(reachedLevel,"Error running tool or reading report file",reportEntries);
+				return new Report(reachedLevel, "Error running tool or reading report file", reportEntries);
 			}
 		}
-		return new Report(reachedLevel,null,reportEntries);
+		return new Report(reachedLevel, null, reportEntries);
 	}
 
 	public List<Report> runChecks(int targetLevel) throws IOException, InterruptedException {
 		List<Report> reports = new ArrayList<>();
 		for (Path pdfFile : this.pdfsInFolder) {
-			reports.add(runChecks(targetLevel,pdfFile));
+			reports.add(runChecks(targetLevel, pdfFile));
 		}
 		return reports;
 	}

@@ -31,9 +31,9 @@ public class ParseConfiguration {
 
 	public ParseConfiguration(String title, Step step) throws IllegalArgumentException {
 		SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
+		this.parentConfig = myconfig.getParent();
 		String profile = myconfig.getString("profileName", null);
 		this.namespaces = readNamespaces(); 
-		this.parentConfig = myconfig.getParent();
 		this.toolConfigurations = readToolConfigurations();
 		this.ingestLevels = readProfile(profile);
 		
@@ -77,8 +77,6 @@ public class ParseConfiguration {
 				String name = checkNode.getString("@name", null);
 				String code = checkNode.getString("@code", null);
 				String xpathSelector = checkNode.getString("@xpathSelector", null);
-				if (validateXPathSelector(xpathSelector))
-					throw new IllegalArgumentException("The xpath-Expression " + xpathSelector + " is invalid!");
 				String regEx = checkNode.getString("@regEx", null);
 				String xmlNamespace = node.getString("@xmlNamespace",null);
 				//maybe it's handy to be able to redefine the namespace in the Check;
@@ -97,17 +95,6 @@ public class ParseConfiguration {
 			ingestLevels.add(checkList);
 		}
 		return ingestLevels;
-	}
-	
-	private boolean validateXPathSelector(String expression) {
-		XPathFactory factory =  XPathFactory.newInstance();
-		XPath xpath = factory.newXPath();
-		try {
-			XPathExpression expr = xpath.compile(expression);
-			return true;
-		} catch (XPathExpressionException e) {
-			return false;
-		}
 	}
 
 	public HashMap<String,ToolConfiguration> readToolConfigurations() {

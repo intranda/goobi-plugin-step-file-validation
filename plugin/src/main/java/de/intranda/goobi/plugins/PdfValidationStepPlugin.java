@@ -127,7 +127,7 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
         boolean successful = true;
         this.process= ProcessManager.getProcessById(step.getProcessId());
         try {
-			CheckManager CManager= new CheckManager(tools, levels, this.process);
+			CheckManager CManager= new CheckManager(tools, levels, this.process, ".*\\.pdf");
 			CManager.runChecks(1);
 		} catch (IOException | InterruptedException | SwapException | DAOException e) {
 			// TODO Auto-generated catch block

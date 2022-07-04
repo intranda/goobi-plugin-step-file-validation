@@ -55,8 +55,7 @@ public class Check {
 			value = value.toString();
 		}
 		ReportEntryStatus re = ReportEntryStatus.ERROR;
-		if (this.regEx.equals(value)
-				|| (value != null && value instanceof String && ((String) value).matches(this.regEx))) {
+		if (value != null && value instanceof String && ((String) value).matches(this.regEx)) {
 			re = ReportEntryStatus.SUCCESS;
 		}else
 			re= ReportEntryStatus.FAILED;
