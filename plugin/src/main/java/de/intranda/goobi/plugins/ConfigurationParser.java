@@ -19,7 +19,7 @@ import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.Helper;
 import lombok.Getter;
 
-public class ParseConfiguration {
+public class ConfigurationParser {
 	private XMLConfiguration xmlConfig;
 	private HierarchicalConfiguration parentConfig;
 	@Getter
@@ -28,16 +28,27 @@ public class ParseConfiguration {
 	private List<List<Check>> ingestLevels;
 	@Getter
 	private HashMap<String, Namespace> namespaces;
+	
+	private String profile;
+	@Getter
+	private String fileFiler;
+	@Getter
+	private int targetLevel;
 
-	public ParseConfiguration(String title, Step step) throws IllegalArgumentException {
+	public ConfigurationParser(String title, Step step) throws IllegalArgumentException {
 		SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
 		this.parentConfig = myconfig.getParent();
-		String profile = myconfig.getString("profileName", null);
+		//read ProjectConfiguration
+		this.profile = myconfig.getString("profileName", null);
+		this.fileFiler = myconfig.getString("fileFilter",null);
+		this.targetLevel = myconfig.getInteger("targetLevel",null);
+		//read global Configuraton
 		this.namespaces = readNamespaces(); 
 		this.toolConfigurations = readToolConfigurations();
 		this.ingestLevels = readProfile(profile);
 		
 	}
+	
 
 //	public ParseConfiguration (String filename) {
 //		xmlConfig = new XMLConfiguration();

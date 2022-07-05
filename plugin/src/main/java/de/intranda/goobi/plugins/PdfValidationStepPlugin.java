@@ -36,6 +36,8 @@ import org.goobi.production.enums.PluginType;
 import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IStepPluginVersion2;
 
+import de.intranda.goobi.plugins.Logging.LoggerInterface;
+import de.intranda.goobi.plugins.Logging.ProcessLogger;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.exceptions.DAOException;
@@ -57,28 +59,30 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
     private Step step;
     @Getter
     private String value;
-    @Getter 
-    private boolean allowTaskFinishButtons;
+    private LoggerInterface logger;
     private String returnPath;
     private List<List<Check>> levels; 
     private HashMap<String,ToolConfiguration> tools;
     private Process process;
-
+    private ConfigurationParser cParser;
     @Override
     public void initialize(Step step, String returnPath) {
         this.returnPath = returnPath;
         this.step = step;
+        this.process= ProcessManager.getProcessById(step.getProcessId());
+        this.logger = new ProcessLogger(process);
         
-        ParseConfiguration cParser = new ParseConfiguration(title,step);
+        cParser = new ConfigurationParser(title,step);
+        
         this.tools = cParser.getToolConfigurations();
         this.levels = cParser.getIngestLevels();
+        
         if (tools.size()>0&&levels.size()>0) {
         	log.info("PdfValidation step plugin initialized"); 
         }else {
         	log.info("Error initializing Plugin");
-        	 Helper.addMessageToProcessLog(step.getProcessId(), LogType.DEBUG, "Error reading Configuration File");
-        }     
-        
+        	 this.logger.message("Error reading Configuration File",LogType.DEBUG);
+        }      
     }
 
     @Override
@@ -127,8 +131,20 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
         boolean successful = true;
         this.process= ProcessManager.getProcessById(step.getProcessId());
         try {
-			CheckManager CManager= new CheckManager(tools, levels, this.process, ".*\\.pdf");
-			CManager.runChecks(1);
+			CheckManager CManager= new CheckManager(tools, levels, this.process, cParser.getFileFiler());
+			CManager.addLogger(this.logger);
+			List<Report> reports =CManager.runChecks(cParser.getTargetLevel());
+			if (reports.isEmpty()) {
+				this.logger.message("ERROR: No Report was created!",LogType.INFO);
+			}
+			for (Report report : reports) {
+				if (report.getLevel()<cParser.getTargetLevel()) {
+					this.logger.message("ERROR: The File "+report.getFileName()+" did not reach the required target level!",LogType.ERROR);
+					successful= false;
+				}else {
+					this.logger.message("The File "+report.getFileName()+" did reach the required target level!",LogType.INFO);
+				}
+			}
 		} catch (IOException | InterruptedException | SwapException | DAOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

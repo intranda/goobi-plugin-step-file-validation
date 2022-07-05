@@ -43,8 +43,15 @@ public class Check {
 		this.regEx = regEx;
 	}
 
-	public ReportEntry check(Document doc) {
+	public ReportEntry check(Document doc) {		
 		Object value = xpath.evaluateFirst(doc);
+		if (regEx==null) {
+			if (value ==null) {
+				return new ReportEntry(this,value,ReportEntryStatus.FAILED);
+			}else {
+				return new ReportEntry(this,value,ReportEntryStatus.SUCCESS);
+			}
+		}
 		if (value instanceof Element) {
 			value = ((Element) value).getTextTrim();
 		} else if (value instanceof Attribute) {

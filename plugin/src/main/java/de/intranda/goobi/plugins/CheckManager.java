@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.goobi.beans.Process;
+import org.goobi.production.enums.LogType;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
+import de.intranda.goobi.plugins.Logging.LoggerInterface;
 import de.sub.goobi.helper.StorageProvider;
 
 import de.sub.goobi.helper.exceptions.DAOException;
@@ -28,8 +30,19 @@ public class CheckManager {
 
 	private Path outputPath;
 	private List<Path> pdfsInFolder = new ArrayList<>();
+	private List<LoggerInterface> loggers = new ArrayList<>();
 	// mayber refactor later
-
+	
+	public void addLogger (LoggerInterface logger) {
+		loggers.add(logger);
+	}
+	
+	public void log(String message, LogType type) {
+		for (LoggerInterface logger: loggers) {
+			logger.message(message, type);
+		}
+	}
+	
 	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,
 			Process process, String fileFilter) throws IOException, InterruptedException, SwapException, DAOException {
 
@@ -70,10 +83,10 @@ public class CheckManager {
 
 	public Report runChecks(int targetLevel, Path pathToFile) {
 		int reachedLevel = -1;
-		HashMap<String, SimpleEntry<String, String>> reportFiles = new HashMap();
+		String fileName= pathToFile.getFileName().toString();
 		SAXBuilder jdomBuilder = new SAXBuilder();
 		List<ReportEntry> reportEntries = new ArrayList<>();
-		for (int level = 0; level < ingestLevels.size(); level++) {
+		for (int level = 0; level < ingestLevels.size()&&level<=targetLevel; level++) {
 			List<Check> checks = ingestLevels.get(level);
 			HashMap<String, List<Check>> ChecksGroupedByTool = new HashMap();
 			for (Check check : checks) {
@@ -86,11 +99,10 @@ public class CheckManager {
 				groupedChecks.add(check);
 			}
 			try {
+				//run grouped Checks
 				for (String toolName : ChecksGroupedByTool.keySet()) {
-					SimpleEntry<String, String> reportFile = reportFiles.get(toolName);
-					if (reportFile == null) {
-						reportFile= runTool(toolName, pathToFile);
-					}
+					SimpleEntry<String, String> reportFile = reportFile= runTool(toolName, pathToFile);
+					
 					Document jdomDocument;
 					jdomDocument = jdomBuilder.build(reportFile.getValue());
 
@@ -98,16 +110,18 @@ public class CheckManager {
 						ReportEntry re = check.check(jdomDocument);
 						reportEntries.add(re);
 						if (re.getStatus() != ReportEntryStatus.SUCCESS) {
-							return new Report(reachedLevel, check.getCode(), reportEntries);
+							log("Check '"+ check.getName() +"' failed! The Errormessage is "+check.getCode(),LogType.ERROR);
+							return new Report(reachedLevel, check.getCode(),fileName, reportEntries);
 						}
 					}
 				}
 				reachedLevel = level;
 			} catch (IOException | JDOMException | InterruptedException e) {
-				return new Report(reachedLevel, "Error running tool or reading report file", reportEntries);
+				log("A Check failed because of an Exception. ErrorMessage: "+e.getMessage() ,LogType.ERROR);
+				return new Report(reachedLevel, "Error running tool or reading report file",fileName, reportEntries);
 			}
 		}
-		return new Report(reachedLevel, null, reportEntries);
+		return new Report(reachedLevel, null ,fileName,reportEntries);
 	}
 
 	public List<Report> runChecks(int targetLevel) throws IOException, InterruptedException {
