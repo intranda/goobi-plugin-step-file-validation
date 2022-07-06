@@ -38,6 +38,7 @@ import org.goobi.production.plugin.interfaces.IStepPluginVersion2;
 
 import de.intranda.goobi.plugins.Logging.LoggerInterface;
 import de.intranda.goobi.plugins.Logging.ProcessLogger;
+import de.intranda.goobi.plugins.Reporting.Report;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.exceptions.DAOException;

@@ -12,6 +12,8 @@ import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
+import de.intranda.goobi.plugins.Reporting.ReportEntry;
+import de.intranda.goobi.plugins.Reporting.ReportEntryStatus;
 import lombok.Getter;
 
 public class Check {

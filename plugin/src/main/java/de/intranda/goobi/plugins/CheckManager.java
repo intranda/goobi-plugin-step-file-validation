@@ -18,6 +18,9 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
 import de.intranda.goobi.plugins.Logging.LoggerInterface;
+import de.intranda.goobi.plugins.Reporting.Report;
+import de.intranda.goobi.plugins.Reporting.ReportEntry;
+import de.intranda.goobi.plugins.Reporting.ReportEntryStatus;
 import de.sub.goobi.helper.StorageProvider;
 
 import de.sub.goobi.helper.exceptions.DAOException;
@@ -85,6 +88,7 @@ public class CheckManager {
 		int reachedLevel = -1;
 		String fileName= pathToFile.getFileName().toString();
 		SAXBuilder jdomBuilder = new SAXBuilder();
+		HashMap<String, SimpleEntry<String,String>> xmlReports = new HashMap();
 		List<ReportEntry> reportEntries = new ArrayList<>();
 		for (int level = 0; level < ingestLevels.size()&&level<=targetLevel; level++) {
 			List<Check> checks = ingestLevels.get(level);
@@ -101,8 +105,11 @@ public class CheckManager {
 			try {
 				//run grouped Checks
 				for (String toolName : ChecksGroupedByTool.keySet()) {
-					SimpleEntry<String, String> reportFile = reportFile= runTool(toolName, pathToFile);
-					
+					SimpleEntry<String,String> reportFile = xmlReports.get(toolName);
+					if (reportFile == null) {
+						reportFile = runTool(toolName, pathToFile);
+						xmlReports.put(toolName, reportFile);
+					}
 					Document jdomDocument;
 					jdomDocument = jdomBuilder.build(reportFile.getValue());
 

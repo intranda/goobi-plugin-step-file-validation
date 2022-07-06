@@ -1,8 +1,10 @@
-package de.intranda.goobi.plugins;
+package de.intranda.goobi.plugins.Reporting;
 
+import de.intranda.goobi.plugins.Check;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
 public class ReportEntry {
 	@Getter @Setter
 	private String checkName;

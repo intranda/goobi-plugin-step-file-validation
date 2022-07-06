@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins;
+package de.intranda.goobi.plugins.Reporting;
 
 import java.util.ArrayList;
 import java.util.List;
