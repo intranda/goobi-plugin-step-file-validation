@@ -86,6 +86,7 @@ public class ConfigurationParser {
 			for (HierarchicalConfiguration checkNode : checkNodes) {
 				String tool = checkNode.getString("@tool", null);
 				String name = checkNode.getString("@name", null);
+				String dependsOn = checkNode.getString("@dependsOn", null);
 				String code = checkNode.getString("@code", null);
 				String xpathSelector = checkNode.getString("@xpathSelector", null);
 				String regEx = checkNode.getString("@regEx", null);
@@ -100,7 +101,7 @@ public class ConfigurationParser {
 					namespace = this.namespaces.get(xmlNamespace);
 				}
 				
-				Check check = new Check(name, tool, code, xpathSelector, regEx, namespace);
+				Check check = new Check(name, dependsOn, tool, code, xpathSelector, regEx, namespace);
 				checkList.add(check);
 			}
 			ingestLevels.add(checkList);
