@@ -15,12 +15,15 @@ import org.jdom2.xpath.XPathFactory;
 import de.intranda.goobi.plugins.Reporting.ReportEntry;
 import de.intranda.goobi.plugins.Reporting.ReportEntryStatus;
 import lombok.Getter;
+import lombok.Setter;
 
 public class Check {
 	@Getter
 	private String name;
 	@Getter
 	private String dependsOn;
+	@Getter @Setter
+	private CheckStatus status;
 	@Getter
 	private String tool;
 	@Getter
@@ -36,6 +39,7 @@ public class Check {
 
 		this.name = name;
 		this.dependsOn = dependsOn;
+		this.checkStatus = CheckStatus.NEW;
 		this.tool = tool;
 		this.code = code;
 		this.xpathSelector = xpathSelector;

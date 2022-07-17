@@ -78,15 +78,21 @@ public class ConfigurationParser {
 	}
 	public List<List<Check>> readProfile(String profile) throws IllegalArgumentException {
 		SubnodeConfiguration profileNode = this.parentConfig.configurationAt("//profile[@name='" + profile + "']" );
+		List<String> parsedChecks = new ArrayList<String>();
 		List<HierarchicalConfiguration> level = profileNode.configurationsAt("level");
 		List<List<Check>> ingestLevels = new ArrayList<List<Check>>();
 		for (HierarchicalConfiguration node : level) {
+			
 			List<Check> checkList = new ArrayList<Check>();
 			List<HierarchicalConfiguration> checkNodes = node.configurationsAt("check");
 			for (HierarchicalConfiguration checkNode : checkNodes) {
 				String tool = checkNode.getString("@tool", null);
 				String name = checkNode.getString("@name", null);
 				String dependsOn = checkNode.getString("@dependsOn", null);
+				if (dependsOn!=null) {
+					if (!parsedChecks.stream().anyMatch(checkName -> checkName.equals(dependsOn)))
+						throw new IllegalArgumentException("You can't depend on a Check you have not defined yet-> dependsOn:"+dependsOn+" checkName: "+name);
+				}
 				String code = checkNode.getString("@code", null);
 				String xpathSelector = checkNode.getString("@xpathSelector", null);
 				String regEx = checkNode.getString("@regEx", null);
@@ -103,6 +109,7 @@ public class ConfigurationParser {
 				
 				Check check = new Check(name, dependsOn, tool, code, xpathSelector, regEx, namespace);
 				checkList.add(check);
+				parsedChecks.add(name);
 			}
 			ingestLevels.add(checkList);
 		}
