@@ -1,6 +1,7 @@
 package de.intranda.goobi.plugins.Reporting;
 
 import de.intranda.goobi.plugins.Check;
+import de.intranda.goobi.plugins.CheckStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,14 +12,15 @@ public class ReportEntry {
 	@Getter @Setter
 	private String value;
 	@Getter @Setter
-	private ReportEntryStatus status;
+	private CheckStatus status;
+	@Getter @Setter
 	private String message;
 
-	public ReportEntry (Check check, Object value, ReportEntryStatus res) {
+	public ReportEntry (Check check, Object value) {
 		this.checkName = check.getName();
-		this.status = res;
+		this.status = check.getStatus();
 		this.value = (value==null)? "":(String)value;
-		this.message = (res!=ReportEntryStatus.SUCCESS)? check.getCode(): "Check passed!";
+		this.message = (status!=CheckStatus.SUCCESS)? check.getCode(): "Check passed!";
 	}
 	
 }

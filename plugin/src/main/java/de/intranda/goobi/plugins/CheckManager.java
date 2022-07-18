@@ -6,11 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.goobi.beans.Process;
 import org.goobi.production.enums.LogType;
@@ -21,7 +19,6 @@ import org.jdom2.input.SAXBuilder;
 import de.intranda.goobi.plugins.Logging.LoggerInterface;
 import de.intranda.goobi.plugins.Reporting.Report;
 import de.intranda.goobi.plugins.Reporting.ReportEntry;
-import de.intranda.goobi.plugins.Reporting.ReportEntryStatus;
 import de.sub.goobi.helper.StorageProvider;
 
 import de.sub.goobi.helper.exceptions.DAOException;
@@ -35,7 +32,8 @@ public class CheckManager {
 	private Path outputPath;
 	private List<Path> pdfsInFolder = new ArrayList<>();
 	private List<LoggerInterface> loggers = new ArrayList<>();
-	HashMap<String, List<Check>> checksGroupedByDependsOn = new LinkedHashMap<>();
+	private HashMap<String, List<Check>> checksGroupedByDependsOn = new LinkedHashMap<>();
+
 	// mayber refactor later
 
 	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,
@@ -81,15 +79,6 @@ public class CheckManager {
 		}
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean buildDepencyMap() {
-
-		return false;
-	}
-
 	private SimpleEntry<String, String> runTool(String toolName, Path pdfFile)
 			throws IOException, InterruptedException {
 		ToolConfiguration tc = this.toolConfigurations.get(toolName);
@@ -97,11 +86,13 @@ public class CheckManager {
 		return tr.runTool(pdfFile);
 	}
 
-	private boolean groupChecksByDependsOn() {
+	private void groupChecksByDependsOn() {
 		for (int level = 0; level < ingestLevels.size(); level++) {
 			List<Check> checks = ingestLevels.get(level);
 			for (Check check : checks) {
-				String dependsOn = check.getTool();
+				String dependsOn = check.getDependsOn();
+				if (dependsOn == null)
+					continue;
 				List<Check> groupedChecks = checksGroupedByDependsOn.get(dependsOn);
 				if (groupedChecks == null) {
 					groupedChecks = new ArrayList();
@@ -110,54 +101,67 @@ public class CheckManager {
 				groupedChecks.add(check);
 			}
 		}
-		return true;
 	}
-	private boolean updateDependencies(String dependsOn) {
-		List<Check> checks = checksGroupedByDependsOn.get(dependsOn);
+
+	private HashMap<String, List<Check>> groupChecksByGroup(List<Check> checks) {
+		HashMap<String, List<Check>> checksGroupedByGroup = new HashMap<String, List<Check>>();
+		for (Check check : checks) {
+			String group = check.getGroup();
+			if (group == null)
+				continue;
+			List<Check> groupedChecks = checksGroupedByGroup.get(group);
+			if (groupedChecks == null) {
+				groupedChecks = new ArrayList();
+				checksGroupedByGroup.put(group, groupedChecks);
+			}
+			groupedChecks.add(check);
+		}
+		return checksGroupedByGroup;
+	}
+
+	private void updateDependencies(String checkName) {
+		List<Check> checks = checksGroupedByDependsOn.get(checkName);
+		if (checks == null)
+			return;
 		for (Check check : checks) {
 			check.setStatus(CheckStatus.PREQUISITEFAILED);
-			return updateDependencies(check.getName());
+			updateDependencies(check.getName());
 		}
-		return true;
 	}
 
 	public Report runChecks(int targetLevel, Path pathToFile) {
 		int reachedLevel = -1;
 		String fileName = pathToFile.getFileName().toString();
 		SAXBuilder jdomBuilder = new SAXBuilder();
-		HashMap<String, SimpleEntry<String, String>> xmlReports = new HashMap();
+		HashMap<String, SimpleEntry<String, String>> xmlReportsByTool = new HashMap<>();
+		HashMap<String, Document> jdomDocumentsByTool = new HashMap<>();
 		List<ReportEntry> reportEntries = new ArrayList<>();
+		groupChecksByDependsOn();
 		for (int level = 0; level < ingestLevels.size() && level <= targetLevel; level++) {
 			List<Check> checks = ingestLevels.get(level);
-			HashMap<String, List<Check>> ChecksGroupedByTool = new LinkedHashMap();
-			for (Check check : checks) {
-				String tool = check.getTool();
-				List<Check> groupedChecks = ChecksGroupedByTool.get(tool);
-				if (groupedChecks == null) {
-					groupedChecks = new ArrayList();
-					ChecksGroupedByTool.put(tool, groupedChecks);
-				}
-				groupedChecks.add(check);
-			}
+			HashMap<String, List<Check>> checksGroupedByGroup = groupChecksByGroup(checks);
 			try {
-				// run grouped Checks
-				for (String toolName : ChecksGroupedByTool.keySet()) {
-					SimpleEntry<String, String> reportFile = xmlReports.get(toolName);
-					if (reportFile == null) {
-						reportFile = runTool(toolName, pathToFile);
-						xmlReports.put(toolName, reportFile);
+				for (Check check : checks) {
+					if (check.getStatus() != CheckStatus.NEW) {
+						continue;
 					}
-					Document jdomDocument;
-					jdomDocument = jdomBuilder.build(reportFile.getValue());
+					String toolName = check.getTool();
+					Document jdomDocument = jdomDocumentsByTool.get(toolName);
 
-					for (Check check : ChecksGroupedByTool.get(toolName)) {
-						ReportEntry re = check.check(jdomDocument);
-						reportEntries.add(re);
-						if (re.getStatus() != ReportEntryStatus.SUCCESS) {
-							log("Check '" + check.getName() + "' failed! The Errormessage is " + check.getCode(),
-									LogType.ERROR);
+					if (jdomDocument == null) {
+						SimpleEntry<String, String> reportFile = runTool(toolName, pathToFile);
+						jdomDocument = jdomBuilder.build(reportFile.getValue());
+						jdomDocumentsByTool.put(toolName, jdomDocument);
+					}
+
+					ReportEntry re = check.run(jdomDocument);
+					reportEntries.add(re);
+					if (re.getStatus() != CheckStatus.SUCCESS) {
+						log("Check '" + check.getName() + "' failed! The Errormessage is " + check.getCode(),
+								LogType.ERROR);
+						updateDependencies(check.getName());
+						if (groupFailed(check.getGroup(), checksGroupedByGroup))
 							return new Report(reachedLevel, check.getCode(), fileName, reportEntries);
-						}
 					}
 				}
 				reachedLevel = level;
@@ -167,6 +171,26 @@ public class CheckManager {
 			}
 		}
 		return new Report(reachedLevel, null, fileName, reportEntries);
+	}
+
+	/**
+	 * @param group                group which shall be tested
+	 * @param checksGroupedByGroup HashMap with groups of the current level
+	 * @return true if ALL checks have one of the following statis ERROR,
+	 *         PREQUISITEFAILED, FAILED function also returns true if the given
+	 *         group was null or if no group with the given name could be found in
+	 *         the provided HashMap.
+	 */
+	private boolean groupFailed(String group, HashMap<String, List<Check>> checksGroupedByGroup) {
+		if (group == null) {
+			return true;
+		}
+		List<Check> checks = checksGroupedByGroup.get(group);
+		if (checks == null || checks.size() == 1) {
+			return true;
+		}
+		return checks.stream().allMatch(check -> check.getStatus() == CheckStatus.ERROR
+				|| check.getStatus() == CheckStatus.PREQUISITEFAILED || check.getStatus() == CheckStatus.FAILED);
 	}
 
 	public List<Report> runChecks(int targetLevel) throws IOException, InterruptedException {

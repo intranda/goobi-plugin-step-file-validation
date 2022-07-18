@@ -19,27 +19,30 @@ import lombok.Setter;
 
 public class Check {
 	@Getter
-	private String name;
+	protected String name;
 	@Getter
-	private String dependsOn;
+	protected String dependsOn;
 	@Getter @Setter
-	private CheckStatus status;
+	protected CheckStatus status;
+	@Getter 
+	protected String group;
 	@Getter
-	private String tool;
+	protected String tool;
 	@Getter
-	private String code;
+	protected String code;
 	@Getter
-	private String xpathSelector;
+	protected String xpathSelector;
 	@Getter
-	private XPathExpression xpath;
+	protected XPathExpression xpath;
 	@Getter
 	private String regEx;
 
-	public Check(String name, String dependsOn, String tool, String code, String xpathSelector, String regEx, Namespace namespace) {
+	public Check(String name, String dependsOn, String group, String tool, String code, String xpathSelector, String regEx, Namespace namespace) {
 
 		this.name = name;
 		this.dependsOn = dependsOn;
-		this.checkStatus = CheckStatus.NEW;
+		this.group = group;
+		this.status = CheckStatus.NEW;
 		this.tool = tool;
 		this.code = code;
 		this.xpathSelector = xpathSelector;
@@ -51,16 +54,18 @@ public class Check {
 		// TODO validate regEx
 		this.regEx = regEx;
 	}
-
-	public ReportEntry check(Document doc) {		
+	
+	public ReportEntry run(Document doc) {		
 		Object value = xpath.evaluateFirst(doc);
 		
 		//no regex triggers check for existence (null)
 		if (regEx==null) {
 			if (value ==null) {
-				return new ReportEntry(this,value,ReportEntryStatus.FAILED);
+				this.status = CheckStatus.FAILED;
+				return new ReportEntry(this,value);
 			}else {
-				return new ReportEntry(this,value,ReportEntryStatus.SUCCESS);
+				this.status = CheckStatus.SUCCESS;
+				return new ReportEntry(this,value);
 			}
 		}
 		
@@ -76,11 +81,11 @@ public class Check {
 		
 		ReportEntryStatus re = ReportEntryStatus.ERROR;
 		if (value != null && value instanceof String && ((String) value).matches(this.regEx)) {
-			re = ReportEntryStatus.SUCCESS;
+			this.status=CheckStatus.SUCCESS;
 		}else {
-			re= ReportEntryStatus.FAILED;
+			this.status=CheckStatus.FAILED;
 		}
-		return new ReportEntry(this,value,re);
+		return new ReportEntry(this,value);
 		
 	}
 }

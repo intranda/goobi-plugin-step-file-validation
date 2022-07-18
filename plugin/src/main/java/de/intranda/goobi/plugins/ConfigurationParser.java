@@ -89,6 +89,7 @@ public class ConfigurationParser {
 				String tool = checkNode.getString("@tool", null);
 				String name = checkNode.getString("@name", null);
 				String dependsOn = checkNode.getString("@dependsOn", null);
+				String group = checkNode.getString("@group", null);
 				if (dependsOn!=null) {
 					if (!parsedChecks.stream().anyMatch(checkName -> checkName.equals(dependsOn)))
 						throw new IllegalArgumentException("You can't depend on a Check you have not defined yet-> dependsOn:"+dependsOn+" checkName: "+name);
@@ -107,7 +108,7 @@ public class ConfigurationParser {
 					namespace = this.namespaces.get(xmlNamespace);
 				}
 				
-				Check check = new Check(name, dependsOn, tool, code, xpathSelector, regEx, namespace);
+				Check check = new Check(name, dependsOn, group, tool, code, xpathSelector, regEx, namespace);
 				checkList.add(check);
 				parsedChecks.add(name);
 			}

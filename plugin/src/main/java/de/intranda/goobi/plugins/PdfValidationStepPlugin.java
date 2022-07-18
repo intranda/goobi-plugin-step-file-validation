@@ -25,8 +25,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.commons.configuration.HierarchicalConfiguration;
-import org.apache.commons.configuration.SubnodeConfiguration;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.production.enums.LogType;
