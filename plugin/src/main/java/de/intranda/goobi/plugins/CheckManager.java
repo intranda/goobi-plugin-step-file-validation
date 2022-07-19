@@ -33,19 +33,22 @@ public class CheckManager {
 	private List<Path> pdfsInFolder = new ArrayList<>();
 	private List<LoggerInterface> loggers = new ArrayList<>();
 	private HashMap<String, List<Check>> checksGroupedByDependsOn = new LinkedHashMap<>();
+	private boolean runAllChecks = false;
 
-	// mayber refactor later
-
-	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,
-			Process process, String fileFilter) throws IOException, InterruptedException, SwapException, DAOException {
-
+	private CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels) {
 		this.toolConfigurations = toolsConfigurations;
 		this.ingestLevels = ingestLevels;
-
-		// readConfiguration
-
-		// TODO implement FilenameFilter here!
-		// this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles(process.getSourceDirectory()));
+	}
+	
+	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels, Path outputPath) {
+		this(toolsConfigurations,ingestLevels);
+		this.outputPath = Paths.get(outputPath.toString(), System.currentTimeMillis() + "_xml");
+	}
+	
+	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,
+			Process process, String fileFilter) throws IOException, InterruptedException, SwapException, DAOException {
+		this(toolsConfigurations,ingestLevels);
+		//TODO change to production/setting
 		this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles("/opt/digiverso/pdf", (path) -> {
 			try {
 				if (path.getFileName().toString().matches(fileFilter)) {
@@ -63,11 +66,7 @@ public class CheckManager {
 		this.outputPath = Paths.get(test, "validation", System.currentTimeMillis() + "_xml");
 	}
 
-	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels) {
-		this.toolConfigurations = toolsConfigurations;
-		this.ingestLevels = ingestLevels;
-		// pdfsfolder
-	}
+
 
 	public void addLogger(LoggerInterface logger) {
 		loggers.add(logger);
@@ -131,13 +130,15 @@ public class CheckManager {
 
 	public Report runChecks(int targetLevel, Path pathToFile) {
 		int reachedLevel = -1;
+		int endCheckOnLevel = (runAllChecks==true)? ingestLevels.size()-1 : targetLevel;
+			
 		String fileName = pathToFile.getFileName().toString();
 		SAXBuilder jdomBuilder = new SAXBuilder();
 		HashMap<String, SimpleEntry<String, String>> xmlReportsByTool = new HashMap<>();
 		HashMap<String, Document> jdomDocumentsByTool = new HashMap<>();
 		List<ReportEntry> reportEntries = new ArrayList<>();
 		groupChecksByDependsOn();
-		for (int level = 0; level < ingestLevels.size() && level <= targetLevel; level++) {
+		for (int level = 0; level <= endCheckOnLevel; level++) {
 			List<Check> checks = ingestLevels.get(level);
 			HashMap<String, List<Check>> checksGroupedByGroup = groupChecksByGroup(checks);
 			try {
@@ -175,8 +176,8 @@ public class CheckManager {
 
 	/**
 	 * @param group                group which shall be tested
-	 * @param checksGroupedByGroup HashMap with groups of the current level
-	 * @return true if ALL checks have one of the following statis ERROR,
+	 * @param checksGroupedByGroup HashMap with grouped Checks of the current level
+	 * @return true if ALL checks have one of the following states ERROR,
 	 *         PREQUISITEFAILED, FAILED function also returns true if the given
 	 *         group was null or if no group with the given name could be found in
 	 *         the provided HashMap.

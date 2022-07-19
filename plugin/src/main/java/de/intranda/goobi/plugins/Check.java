@@ -31,8 +31,6 @@ public class Check {
 	@Getter
 	protected String code;
 	@Getter
-	protected String xpathSelector;
-	@Getter
 	protected XPathExpression xpath;
 	@Getter
 	private String regEx;
@@ -45,13 +43,11 @@ public class Check {
 		this.status = CheckStatus.NEW;
 		this.tool = tool;
 		this.code = code;
-		this.xpathSelector = xpathSelector;
 		if (namespace == null) {
 			xpath = XPathFactory.instance().compile(xpathSelector);
 		}else {
 			xpath = XPathFactory.instance().compile(xpathSelector,Filters.fpassthrough(),null,namespace);
 		}
-		// TODO validate regEx
 		this.regEx = regEx;
 	}
 	

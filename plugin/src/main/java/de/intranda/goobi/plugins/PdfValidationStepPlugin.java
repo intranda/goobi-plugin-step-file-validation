@@ -2,6 +2,8 @@ package de.intranda.goobi.plugins;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 
 /**
  * This file is part of a plugin for Goobi - a Workflow tool for the support of mass digitization.
@@ -37,13 +39,11 @@ import org.goobi.production.plugin.interfaces.IStepPluginVersion2;
 import de.intranda.goobi.plugins.Logging.LoggerInterface;
 import de.intranda.goobi.plugins.Logging.ProcessLogger;
 import de.intranda.goobi.plugins.Reporting.Report;
-import de.sub.goobi.config.ConfigPlugins;
-import de.sub.goobi.helper.Helper;
+import de.intranda.goobi.plugins.Reporting.ReportEntry;
+import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
@@ -124,6 +124,27 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
         PluginReturnValue ret = run();
         return ret != PluginReturnValue.ERROR;
     }
+    
+    public static Report validateFile(Path path) {
+    	return validateFile( path, "*");
+   }
+    
+    public static Report validateFile(Path path, String institution) {
+    	ConfigurationParser confParser = new ConfigurationParser("intranda_step_pdf_validation",institution);
+    	HashMap<String,ToolConfiguration> toolConfigurations = confParser.getToolConfigurations();
+    	List<List<Check>> levelsWithChecks = confParser.getIngestLevels();
+    	Path outputPath = Paths.get(confParser.getOutputFolder());
+    	Report report;
+    	//TODO more Checks for the Path maybe with Filter...
+    	if (StorageProvider.getInstance().isFileExists(path)) {
+        	CheckManager CManager= new CheckManager(toolConfigurations, levelsWithChecks, outputPath);
+    		report =CManager.runChecks(confParser.getTargetLevel(),path);
+    	}else {
+    		report = new Report(-1,"The file could not be found!",path.getFileName().toString(), new ArrayList<ReportEntry>());
+    	}
+
+    	return report;
+   }
 
     @Override
     public PluginReturnValue run() {
@@ -141,7 +162,7 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
 					this.logger.message("ERROR: The File "+report.getFileName()+" did not reach the required target level!",LogType.ERROR);
 					successful= false;
 				}else {
-					this.logger.message("The File "+report.getFileName()+" did reach the required target level!",LogType.INFO);
+					this.logger.message("The File "+report.getFileName()+" reached the required target level!",LogType.INFO);
 				}
 			}
 		} catch (IOException | InterruptedException | SwapException | DAOException e) {
