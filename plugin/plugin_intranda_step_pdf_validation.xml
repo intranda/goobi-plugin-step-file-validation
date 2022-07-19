@@ -7,52 +7,60 @@
 		<!-- which projects to use for (can be more then one, otherwise use *) -->
 		<project>*</project>
 		<step>*</step>
-		<folder>Folder with PDF</folder>
-		<fileFilter>\.pdf$</fileFilter>
-		<profile>testprofile</profile>
-		<success>2</success>
-		<stepOnError>Upload</stepOnError>
+		<!--folder>Folder with PDF</folder -->
+		<fileFilter>.*\.pdf</fileFilter>
+		<profileName>testprofile</profileName>
+		<targetLevel>0</targetLevel>
 	</config>
-	
+
 	<global>
-	<profile name="testprofile" >
+		<profile name="testprofile">
 			<level>
-				<check name="hasfeaturereport"
-					tool="verapdf" 
-					code="isPdfa" 
-					xpathSelector="//report/batchSummary/featureReports"
-					regEx="1" 
-				/>
+				<check name="checkVersion" group="test" tool="jhove"
+					code="The Version of the PDF-File is not supported"
+					xpathSelector="//jhove:repInfo/jhove:version"
+					regEx="^1\.[012456]$|^2\.0$" />
+
+				<check name="featureReportCreated" group="test"
+					dependsOn="checkVersion" tool="verapdf"
+					code="The Value of this node is not 1"
+					xpathSelector="//report/batchSummary/featureReports" regEx="0" />
+
+				<check name="featureReportCreated2"
+					dependsOn="featureReportCreated" tool="verapdf"
+					code="The node featureReports3 does not exist"
+					xpathSelector="//report/batchSummary/featureReports3" />
+
 			</level>
 			<level>
-				<check name="jhove validation"
-					tool="jhove" 
-					code="validation_failed" 
+				<check name="checkEncryption" tool="jhove"
+					code="validation_failed"
+					xpathSelector="//jhove:repInfo/jhove:properties/jhove:property[name='Encryption']" />
+			</level>
+			<level>
+				<check name="isValid" tool="jhove" code="validation_failed"
 					xpathSelector="//jhove:repInfo/jhove:status"
-					regEx="Well-Formed and valid" 
-				/>
+					regex="Well-Formed and valid" />
+				<check name="pdf-a validation" tool="verapdf"
+					code="pdfa_validation_failed" xpathSelector="xpathSelector"
+					regEx="regEx" />
 			</level>
-			<level>
-				<check name="pdf-a validation"
-					tool="verapdf" 
-					code="pdfa_validation_failed" 
-					xpathSelector="xpathSelector"
-					regEx="regEx" 
-				/>
-			</level>
+
 		</profile>
-		<tools>
-			<tool name="verapdf" 
-				cmd="/home/michael/verapdf/verapdf --format mrr {pv.inputFile}"
-				stdout="true"
-			 />
-			<tool name="jhove"
-				 cmd="/opt/digiverso/pdf/jhove/jhove -h MRR -m PDF-hul -o {pv.outputpath} {pv.filename}" 
-				 stdout="false" />
-			<!-- for tools that need the path of the outputfile {pv.outputFilename} -->
-		</tools>
 		<namespaces>
-			<namespace name="jhove" uri="http://schema.openpreservation.org/ois/xml/ns/jhove" />
+			<namespace name="jhove"
+				uri="http://schema.openpreservation.org/ois/xml/ns/jhove" />
 		</namespaces>
+		<tools>
+			<tool name="jhove"
+				cmd="/opt/digiverso/tools/jhove/jhove -h XML -m PDF-hul -o {pv.outputFile} {pv.inputFile}"
+				stdout="false" xmlNamespace="jhove" />
+			<tool name="verapdf"
+				cmd="/home/michael/verapdf/verapdf --format mrr {pv.inputFile}"
+				stdout="true" />
+			<tool name="pdfinfoXml" cmd="/opt/digiverso/tools/"
+				stdout="true" />
+
+		</tools>
 	</global>
 </config_plugin>
