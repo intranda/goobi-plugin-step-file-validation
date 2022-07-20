@@ -5,9 +5,12 @@ import java.util.List;
 import de.intranda.goobi.plugins.Check;
 import de.intranda.goobi.plugins.CheckStatus;
 import de.intranda.goobi.plugins.ValueReader;
+import lombok.Getter;
 
 public class MetadataEntry extends ReportEntry {
+	@Getter
 	private String processProperty;
+	@Getter
 	private String mets;
 
 	public MetadataEntry(Check valueReader) {
