@@ -60,7 +60,8 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
     private String value;
     private LoggerInterface logger;
     private String returnPath;
-    private List<List<Check>> levels; 
+    private List<List<Check>> levelChecks;
+    private List<List<ValueReader>> levelValueReaders;
     private HashMap<String,ToolConfiguration> tools;
     private Process process;
     private ConfigurationParser cParser;
@@ -74,9 +75,10 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
         cParser = new ConfigurationParser(title,step);
         
         this.tools = cParser.getToolConfigurations();
-        this.levels = cParser.getIngestLevels();
+        this.levelChecks = cParser.getIngestLevelChecks();
+        this.levelValueReaders = cParser.getIngestLevelReader();
         
-        if (tools.size()>0&&levels.size()>0) {
+        if (tools.size()>0&&levelChecks.size()>0) {
         	log.info("PdfValidation step plugin initialized"); 
         }else {
         	log.info("Error initializing Plugin");
@@ -130,14 +132,20 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
    }
     
     public static Report validateFile(Path path, String institution) {
-    	ConfigurationParser confParser = new ConfigurationParser("intranda_step_pdf_validation",institution);
+    	ConfigurationParser confParser = null;
+    	try {
+    		confParser = new ConfigurationParser("intranda_step_pdf_validation",institution);
+    	}catch (IllegalArgumentException ex) {
+    		
+    	}
     	HashMap<String,ToolConfiguration> toolConfigurations = confParser.getToolConfigurations();
-    	List<List<Check>> levelsWithChecks = confParser.getIngestLevels();
+    	List<List<Check>> levelWithChecks = confParser.getIngestLevelChecks();
+    	List<List<ValueReader>> levelWithReaders = confParser.getIngestLevelReader(); 
     	Path outputPath = Paths.get(confParser.getOutputFolder());
     	Report report;
     	//TODO more Checks for the Path maybe with Filter...
     	if (StorageProvider.getInstance().isFileExists(path)) {
-        	CheckManager CManager= new CheckManager(toolConfigurations, levelsWithChecks, outputPath);
+        	CheckManager CManager= new CheckManager(toolConfigurations, levelWithChecks, levelWithReaders, outputPath);
     		report =CManager.runChecks(confParser.getTargetLevel(),path);
     	}else {
     		report = new Report(-1,"The file could not be found!",path.getFileName().toString(), new ArrayList<ReportEntry>());
@@ -151,7 +159,7 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
         boolean successful = true;
         this.process= ProcessManager.getProcessById(step.getProcessId());
         try {
-			CheckManager CManager= new CheckManager(tools, levels, this.process, cParser.getFileFiler());
+			CheckManager CManager= new CheckManager(tools, levelChecks, levelValueReaders, this.process, cParser.getFileFiler());
 			CManager.addLogger(this.logger);
 			List<Report> reports =CManager.runChecks(cParser.getTargetLevel());
 			if (reports.isEmpty()) {
@@ -165,6 +173,7 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
 					this.logger.message("The File "+report.getFileName()+" reached the required target level!",LogType.INFO);
 				}
 			}
+		
 		} catch (IOException | InterruptedException | SwapException | DAOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

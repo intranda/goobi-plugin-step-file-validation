@@ -17,6 +17,7 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
 import de.intranda.goobi.plugins.Logging.LoggerInterface;
+import de.intranda.goobi.plugins.Reporting.MetadataEntry;
 import de.intranda.goobi.plugins.Reporting.Report;
 import de.intranda.goobi.plugins.Reporting.ReportEntry;
 import de.sub.goobi.helper.StorageProvider;
@@ -27,7 +28,8 @@ import de.sub.goobi.helper.exceptions.SwapException;
 public class CheckManager {
 
 	private HashMap<String, ToolConfiguration> toolConfigurations;
-	private List<List<Check>> ingestLevels;
+	private List<List<Check>> ingestLevelChecks;
+	private List<List<ValueReader>> ingestLevelReaders;
 
 	private Path outputPath;
 	private List<Path> pdfsInFolder = new ArrayList<>();
@@ -35,19 +37,20 @@ public class CheckManager {
 	private HashMap<String, List<Check>> checksGroupedByDependsOn = new LinkedHashMap<>();
 	private boolean runAllChecks = false;
 
-	private CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels) {
+	private CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevelChecks, List<List<ValueReader>> ingestLevelReaders) {
 		this.toolConfigurations = toolsConfigurations;
-		this.ingestLevels = ingestLevels;
+		this.ingestLevelChecks = ingestLevelChecks;
+		this.ingestLevelReaders = ingestLevelReaders;
 	}
 	
-	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels, Path outputPath) {
-		this(toolsConfigurations,ingestLevels);
+	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,List<List<ValueReader>> ingestLevelReaders, Path outputPath) {
+		this(toolsConfigurations,ingestLevels,ingestLevelReaders);
 		this.outputPath = Paths.get(outputPath.toString(), System.currentTimeMillis() + "_xml");
 	}
 	
-	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,
+	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,List<List<ValueReader>> ingestLevelReaders,
 			Process process, String fileFilter) throws IOException, InterruptedException, SwapException, DAOException {
-		this(toolsConfigurations,ingestLevels);
+		this(toolsConfigurations,ingestLevels,ingestLevelReaders);
 		//TODO change to production/setting
 		this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles("/opt/digiverso/pdf", (path) -> {
 			try {
@@ -65,8 +68,6 @@ public class CheckManager {
 		String test = process.getProcessDataDirectory();
 		this.outputPath = Paths.get(test, "validation", System.currentTimeMillis() + "_xml");
 	}
-
-
 
 	public void addLogger(LoggerInterface logger) {
 		loggers.add(logger);
@@ -86,8 +87,9 @@ public class CheckManager {
 	}
 
 	private void groupChecksByDependsOn() {
-		for (int level = 0; level < ingestLevels.size(); level++) {
-			List<Check> checks = ingestLevels.get(level);
+		for (int level = 0; level < ingestLevelChecks.size(); level++) {
+			List<Check> checks = ingestLevelChecks.get(level);
+						checks.addAll(ingestLevelReaders.get(level));
 			for (Check check : checks) {
 				String dependsOn = check.getDependsOn();
 				if (dependsOn == null)
@@ -127,19 +129,56 @@ public class CheckManager {
 			updateDependencies(check.getName());
 		}
 	}
+	
+	private Report addReaderReport(int endCheckOnLevel, Path pathToFile, Report report, HashMap<String, Document> jdomDocumentsByTool ) {
+		SAXBuilder jdomBuilder = new SAXBuilder();
+		List<MetadataEntry> metadataEntries = new ArrayList<>();
+		for (int level = 0; level <= endCheckOnLevel; level++) {
+			List<ValueReader> valueReaders = ingestLevelReaders.get(level);
+			try {
+				for (ValueReader valueReader : valueReaders) {
+					if (valueReader.getStatus() != CheckStatus.NEW) {
+						continue;
+					}
+					String toolName = valueReader.getTool();
+					Document jdomDocument = jdomDocumentsByTool.get(toolName);
+
+					if (jdomDocument == null) {
+						SimpleEntry<String, String> reportFile = runTool(toolName, pathToFile);
+						jdomDocument = jdomBuilder.build(reportFile.getValue());
+						jdomDocumentsByTool.put(toolName, jdomDocument);
+					}
+
+					MetadataEntry me = (MetadataEntry)valueReader.run(jdomDocument);
+					metadataEntries.add(me);
+					if (me.getStatus() != CheckStatus.SUCCESS) {
+						log("Couldn't retrieve metadata for setValue-elemenent: '" + valueReader.getName() + "' failed! the error message is " + valueReader.getCode(),
+								LogType.ERROR);
+					}
+				}	
+			} catch (IOException | JDOMException | InterruptedException e) {
+				log("A check failed because of an exception. error message: " + e.getMessage(), LogType.ERROR);
+				report.setErrorMessage("Error running tool or reading report file");
+				report.setMetadataEntries(metadataEntries);
+				return report;
+			}	
+		}
+		report.setMetadataEntries(metadataEntries);
+		return report;
+	}
 
 	public Report runChecks(int targetLevel, Path pathToFile) {
 		int reachedLevel = -1;
-		int endCheckOnLevel = (runAllChecks==true)? ingestLevels.size()-1 : targetLevel;
+		int endCheckOnLevel = (runAllChecks==true)? ingestLevelChecks.size()-1 : targetLevel;
 			
 		String fileName = pathToFile.getFileName().toString();
 		SAXBuilder jdomBuilder = new SAXBuilder();
-		HashMap<String, SimpleEntry<String, String>> xmlReportsByTool = new HashMap<>();
 		HashMap<String, Document> jdomDocumentsByTool = new HashMap<>();
 		List<ReportEntry> reportEntries = new ArrayList<>();
 		groupChecksByDependsOn();
+		
 		for (int level = 0; level <= endCheckOnLevel; level++) {
-			List<Check> checks = ingestLevels.get(level);
+			List<Check> checks = ingestLevelChecks.get(level);
 			HashMap<String, List<Check>> checksGroupedByGroup = groupChecksByGroup(checks);
 			try {
 				for (Check check : checks) {
@@ -166,12 +205,14 @@ public class CheckManager {
 					}
 				}
 				reachedLevel = level;
+				
 			} catch (IOException | JDOMException | InterruptedException e) {
 				log("A Check failed because of an Exception. ErrorMessage: " + e.getMessage(), LogType.ERROR);
 				return new Report(reachedLevel, "Error running tool or reading report file", fileName, reportEntries);
 			}
 		}
-		return new Report(reachedLevel, null, fileName, reportEntries);
+		Report report =  new Report(reachedLevel, null, fileName, reportEntries);
+		return addReaderReport(endCheckOnLevel, pathToFile, report, jdomDocumentsByTool);
 	}
 
 	/**

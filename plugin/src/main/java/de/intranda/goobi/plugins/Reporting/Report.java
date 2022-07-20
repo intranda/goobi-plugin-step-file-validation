@@ -3,18 +3,26 @@ package de.intranda.goobi.plugins.Reporting;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Data;
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
 public class Report {
-	int level;
-	List<ReportEntry> entries;
-	String errorMessage;
-	String fileName;
+	@Getter
+	private int level;
+	@Getter
+	private List<ReportEntry> reportEntries;
+	@Getter @Setter
+	private List<MetadataEntry> metadataEntries = new ArrayList<>();
+	@Getter @Setter
+	private String errorMessage;
+	@Getter
+	private String fileName;
 	
-	public Report (int level, String errorMessage,String fileName, List<ReportEntry> entries ) {
+	public Report (int level, String errorMessage,String fileName, List<ReportEntry> reportEntries) {
 		this.fileName = fileName;
 		this.errorMessage = errorMessage;
 		this.level = level;
-		this.entries= entries;
+		this.reportEntries= reportEntries;
 	}
+	
 }

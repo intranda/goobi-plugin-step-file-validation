@@ -8,17 +8,19 @@ import org.jdom2.Namespace;
 import org.jdom2.Text;
 
 import de.intranda.goobi.plugins.Reporting.ReportEntry;
-import de.intranda.goobi.plugins.Reporting.ReportEntryStatus;
+import lombok.Getter;
 
 public class ValueReader extends Check {
+	@Getter
 	private String processProperty;
-	private String metadata;
-	private String value;
+	@Getter
+	private String mets;
 
 	public ValueReader(String name, String dependsOn, String group, String tool, String code, String xpathSelector,
-			String regEx, Namespace namespace, String processProperty, String metadata) {
+			String regEx, Namespace namespace, String processProperty, String mets) {
 		super(name, dependsOn, group, tool, code, xpathSelector, regEx, namespace);
-		this.metadata = metadata;
+		this.mets = mets;
+		this.processProperty = processProperty;
 	}
 
 	public ReportEntry run(Document doc) {
@@ -34,18 +36,17 @@ public class ValueReader extends Check {
 			value = value.toString();
 		}
 
-		ReportEntryStatus re = ReportEntryStatus.ERROR;
 		if (value != null && value instanceof String) {
 			this.status = CheckStatus.SUCCESS;
 			this.value = (String) value;
 		} else {
 			this.status = CheckStatus.FAILED;
 		}
-		return new ReportEntry(this, value);
+		return new ReportEntry(this);
 	}
 	
 	public void save(Process process) {
-		if (this.metadata!=null) {
+		if (this.mets!=null) {
 			
 		}	
 	}

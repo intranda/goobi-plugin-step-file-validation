@@ -13,7 +13,6 @@ import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
 import de.intranda.goobi.plugins.Reporting.ReportEntry;
-import de.intranda.goobi.plugins.Reporting.ReportEntryStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,6 +33,8 @@ public class Check {
 	protected XPathExpression xpath;
 	@Getter
 	private String regEx;
+	@Getter 
+	protected String value;
 
 	public Check(String name, String dependsOn, String group, String tool, String code, String xpathSelector, String regEx, Namespace namespace) {
 
@@ -58,10 +59,10 @@ public class Check {
 		if (regEx==null) {
 			if (value ==null) {
 				this.status = CheckStatus.FAILED;
-				return new ReportEntry(this,value);
+				return new ReportEntry(this);
 			}else {
 				this.status = CheckStatus.SUCCESS;
-				return new ReportEntry(this,value);
+				return new ReportEntry(this);
 			}
 		}
 		
@@ -75,13 +76,13 @@ public class Check {
 			value = value.toString();
 		}
 		
-		ReportEntryStatus re = ReportEntryStatus.ERROR;
 		if (value != null && value instanceof String && ((String) value).matches(this.regEx)) {
 			this.status=CheckStatus.SUCCESS;
+			this.value = (String)value;
 		}else {
 			this.status=CheckStatus.FAILED;
 		}
-		return new ReportEntry(this,value);
+		return new ReportEntry(this);
 		
 	}
 }
