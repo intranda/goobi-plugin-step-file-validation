@@ -9,7 +9,8 @@ import lombok.Setter;
 public class Report {
 	@Getter
 	private int level;
-	@Getter
+	@Getter @Setter
+	private boolean ReachedTargetLevel=true;
 	private List<ReportEntry> reportEntries;
 	@Getter @Setter
 	private List<MetadataEntry> metadataEntries = new ArrayList<>();

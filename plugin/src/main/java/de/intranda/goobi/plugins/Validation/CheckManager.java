@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins;
+package de.intranda.goobi.plugins.Validation;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,6 +16,8 @@ import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
+import de.intranda.goobi.plugins.ToolConfiguration;
+import de.intranda.goobi.plugins.ToolRunner;
 import de.intranda.goobi.plugins.Logging.LoggerInterface;
 import de.intranda.goobi.plugins.Reporting.MetadataEntry;
 import de.intranda.goobi.plugins.Reporting.Report;
@@ -212,6 +214,7 @@ public class CheckManager {
 			}
 		}
 		Report report =  new Report(reachedLevel, null, fileName, reportEntries);
+		if (reachedLevel>=targetLevel) report.setReachedTargetLevel(true);
 		return addReaderReport(endCheckOnLevel, pathToFile, report, jdomDocumentsByTool);
 	}
 

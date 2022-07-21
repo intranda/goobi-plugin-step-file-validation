@@ -2,15 +2,16 @@ package de.intranda.goobi.plugins.Reporting;
 
 import java.util.List;
 
-import de.intranda.goobi.plugins.Check;
-import de.intranda.goobi.plugins.CheckStatus;
-import de.intranda.goobi.plugins.ValueReader;
+import de.intranda.goobi.plugins.Validation.Check;
+import de.intranda.goobi.plugins.Validation.CheckStatus;
+import de.intranda.goobi.plugins.Validation.ValueReader;
 import lombok.Getter;
+import lombok.Setter;
 
 public class MetadataEntry extends ReportEntry {
-	@Getter
+	@Getter @Setter
 	private String processProperty;
-	@Getter
+	@Getter @Setter
 	private String mets;
 
 	public MetadataEntry(Check valueReader) {
@@ -21,6 +22,12 @@ public class MetadataEntry extends ReportEntry {
 			this.processProperty = vr.getProcessProperty();
 			this.mets = vr.getMets();
 		}
+	}
+	//Needed for deep copy
+	public MetadataEntry(MetadataEntry entry) {
+		super(entry);
+		this.processProperty = entry.getProcessProperty();
+		this.mets = entry.getMets();
 	}
 
 }

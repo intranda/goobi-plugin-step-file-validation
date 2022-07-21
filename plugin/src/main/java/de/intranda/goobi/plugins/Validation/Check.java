@@ -1,7 +1,4 @@
-package de.intranda.goobi.plugins;
-
-import java.util.ArrayList;
-import java.util.List;
+package de.intranda.goobi.plugins.Validation;
 
 import org.jdom2.Attribute;
 import org.jdom2.Document;

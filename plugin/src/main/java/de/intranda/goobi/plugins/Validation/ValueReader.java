@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins;
+package de.intranda.goobi.plugins.Validation;
 
 import org.goobi.beans.Process;
 import org.jdom2.Attribute;

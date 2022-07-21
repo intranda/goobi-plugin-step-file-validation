@@ -1,6 +1,7 @@
 package de.intranda.goobi.plugins;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -27,6 +28,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.xml.bind.JAXB;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.production.enums.LogType;
@@ -40,6 +46,9 @@ import de.intranda.goobi.plugins.Logging.LoggerInterface;
 import de.intranda.goobi.plugins.Logging.ProcessLogger;
 import de.intranda.goobi.plugins.Reporting.Report;
 import de.intranda.goobi.plugins.Reporting.ReportEntry;
+import de.intranda.goobi.plugins.Validation.Check;
+import de.intranda.goobi.plugins.Validation.CheckManager;
+import de.intranda.goobi.plugins.Validation.ValueReader;
 import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
@@ -51,140 +60,170 @@ import net.xeoh.plugins.base.annotations.PluginImplementation;
 @PluginImplementation
 @Log4j2
 public class PdfValidationStepPlugin implements IStepPluginVersion2 {
-    
-    @Getter
-    private String title = "intranda_step_pdf_validation";
-    @Getter
-    private Step step;
-    @Getter
-    private String value;
-    private LoggerInterface logger;
-    private String returnPath;
-    private List<List<Check>> levelChecks;
-    private List<List<ValueReader>> levelValueReaders;
-    private HashMap<String,ToolConfiguration> tools;
-    private Process process;
-    private ConfigurationParser cParser;
-    @Override
-    public void initialize(Step step, String returnPath) {
-        this.returnPath = returnPath;
-        this.step = step;
-        this.process= ProcessManager.getProcessById(step.getProcessId());
-        this.logger = new ProcessLogger(process);
-        
-        cParser = new ConfigurationParser(title,step);
-        
-        this.tools = cParser.getToolConfigurations();
-        this.levelChecks = cParser.getIngestLevelChecks();
-        this.levelValueReaders = cParser.getIngestLevelReader();
-        
-        if (tools.size()>0&&levelChecks.size()>0) {
-        	log.info("PdfValidation step plugin initialized"); 
-        }else {
-        	log.info("Error initializing Plugin");
-        	 this.logger.message("Error reading Configuration File",LogType.DEBUG);
-        }      
-    }
 
-    @Override
-    public PluginGuiType getPluginGuiType() {
-        return PluginGuiType.NONE;
-    }
+	@Getter
+	private String title = "intranda_step_pdf_validation";
+	@Getter
+	private Step step;
+	@Getter
+	private String value;
+	private LoggerInterface logger;
+	private String returnPath;
+	private List<List<Check>> levelChecks;
+	private List<List<ValueReader>> levelValueReaders;
+	private HashMap<String, ToolConfiguration> tools;
+	private Process process;
+	private ConfigurationParser cParser;
 
-    @Override
-    public String getPagePath() {
-        return "/uii/plugin_step_pdf_validation.xhtml";
-    }
+	@Override
+	public void initialize(Step step, String returnPath) {
+		this.returnPath = returnPath;
+		this.step = step;
+		this.process = ProcessManager.getProcessById(step.getProcessId());
+		this.logger = new ProcessLogger(process);
 
-    @Override
-    public PluginType getType() {
-        return PluginType.Step;
-    }
+		cParser = new ConfigurationParser(title, step);
 
-    @Override
-    public String cancel() {
-        return "/uii" + returnPath;
-    }
+		this.tools = cParser.getToolConfigurations();
+		this.levelChecks = cParser.getIngestLevelChecks();
+		this.levelValueReaders = cParser.getIngestLevelReader();
 
-    @Override
-    public String finish() {
-        return "/uii" + returnPath;
-    }
-    
-    @Override
-    public int getInterfaceVersion() {
-        return 0;
-    }
+		if (tools.size() > 0 && levelChecks.size() > 0) {
+			log.info("PdfValidation step plugin initialized");
+		} else {
+			log.info("Error initializing Plugin");
+			this.logger.message("Error reading Configuration File", LogType.DEBUG);
+		}
+	}
 
-    @Override
-    public HashMap<String, StepReturnValue> validate() {
-        return null;
-    }
-    
-    @Override
-    public boolean execute() {
-        PluginReturnValue ret = run();
-        return ret != PluginReturnValue.ERROR;
-    }
-    
-    public static Report validateFile(Path path) {
-    	return validateFile( path, "*");
-   }
-    
-    public static Report validateFile(Path path, String institution) {
-    	ConfigurationParser confParser = null;
-    	try {
-    		confParser = new ConfigurationParser("intranda_step_pdf_validation",institution);
-    	}catch (IllegalArgumentException ex) {
-    		
-    	}
-    	HashMap<String,ToolConfiguration> toolConfigurations = confParser.getToolConfigurations();
-    	List<List<Check>> levelWithChecks = confParser.getIngestLevelChecks();
-    	List<List<ValueReader>> levelWithReaders = confParser.getIngestLevelReader(); 
-    	Path outputPath = Paths.get(confParser.getOutputFolder());
-    	Report report;
-    	//TODO more Checks for the Path maybe with Filter...
-    	if (StorageProvider.getInstance().isFileExists(path)) {
-        	CheckManager CManager= new CheckManager(toolConfigurations, levelWithChecks, levelWithReaders, outputPath);
-    		report =CManager.runChecks(confParser.getTargetLevel(),path);
-    	}else {
-    		report = new Report(-1,"The file could not be found!",path.getFileName().toString(), new ArrayList<ReportEntry>());
-    	}
+	@Override
+	public PluginGuiType getPluginGuiType() {
+		return PluginGuiType.NONE;
+	}
 
-    	return report;
-   }
+	@Override
+	public String getPagePath() {
+		return "/uii/plugin_step_pdf_validation.xhtml";
+	}
 
-    @Override
-    public PluginReturnValue run() {
-        boolean successful = true;
-        this.process= ProcessManager.getProcessById(step.getProcessId());
-        try {
-			CheckManager CManager= new CheckManager(tools, levelChecks, levelValueReaders, this.process, cParser.getFileFiler());
+	@Override
+	public PluginType getType() {
+		return PluginType.Step;
+	}
+
+	@Override
+	public String cancel() {
+		return "/uii" + returnPath;
+	}
+
+	@Override
+	public String finish() {
+		return "/uii" + returnPath;
+	}
+
+	@Override
+	public int getInterfaceVersion() {
+		return 0;
+	}
+
+	@Override
+	public HashMap<String, StepReturnValue> validate() {
+		return null;
+	}
+
+	@Override
+	public boolean execute() {
+		PluginReturnValue ret = run();
+		return ret != PluginReturnValue.ERROR;
+	}
+
+	public static Report validateFile(Path path) {
+		return validateFile(path, "*");
+	}
+
+	public static Report validateFile(Path path, String institution) {
+		ConfigurationParser confParser = null;
+		Report report;
+		try {
+			confParser = new ConfigurationParser("intranda_step_pdf_validation", institution);
+		} catch (IllegalArgumentException ex) {
+			report = new Report(-1, "Error reading the Configuration File: " + ex.getMessage(),
+					path.getFileName().toString(), new ArrayList<ReportEntry>());
+		}
+		HashMap<String, ToolConfiguration> toolConfigurations = confParser.getToolConfigurations();
+		List<List<Check>> levelWithChecks = confParser.getIngestLevelChecks();
+		List<List<ValueReader>> levelWithReaders = confParser.getIngestLevelReader();
+		Path outputPath = Paths.get(confParser.getOutputFolder());
+
+		// TODO more Checks for the Path maybe with Filter...
+		if (StorageProvider.getInstance().isFileExists(path)) {
+			CheckManager CManager = new CheckManager(toolConfigurations, levelWithChecks, levelWithReaders, outputPath);
+			report = CManager.runChecks(confParser.getTargetLevel(), path);
+		} else {
+			report = new Report(-1, "The file could not be found!", path.getFileName().toString(),
+					new ArrayList<ReportEntry>());
+		}
+		return report;
+	}
+
+	@Override
+	public PluginReturnValue run() {
+		boolean successful = true;
+		this.process = ProcessManager.getProcessById(step.getProcessId());
+		try {
+			CheckManager CManager = new CheckManager(tools, levelChecks, levelValueReaders, this.process,
+					cParser.getFileFiler());
 			CManager.addLogger(this.logger);
-			List<Report> reports =CManager.runChecks(cParser.getTargetLevel());
+			List<Report> reports = CManager.runChecks(cParser.getTargetLevel());
 			if (reports.isEmpty()) {
-				this.logger.message("ERROR: No Report was created!",LogType.INFO);
+				this.logger.message("ERROR: No Report was created!", LogType.INFO);
 			}
 			for (Report report : reports) {
-				if (report.getLevel()<cParser.getTargetLevel()) {
-					this.logger.message("ERROR: The File "+report.getFileName()+" did not reach the required target level!",LogType.ERROR);
-					successful= false;
-				}else {
-					this.logger.message("The File "+report.getFileName()+" reached the required target level!",LogType.INFO);
+				if (report.getLevel() < cParser.getTargetLevel()) {
+					this.logger.message(
+							"ERROR: The File " + report.getFileName() + " did not reach the required target level!",
+							LogType.ERROR);
+					successful = false;
+				} else {
+					this.logger.message("The File " + report.getFileName() + " reached the required target level!",
+							LogType.INFO);
 				}
 			}
-		
+			
+			ListHolder Holder = new ListHolder();
+			Holder.setList(reports);
+			JAXBContext jaxbContext = JAXBContext.newInstance(ListHolder.class);
+			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			StringWriter sw = new StringWriter();
+			// Marshal the employees list in console
+			jaxbMarshaller.marshal(Holder, sw);
+			String testString = sw.toString();
+			//jaxbMarshaller.marshal(employees, new File("c:/temp/employees.xml"));
+			
+			if (successful) {
+
+
+				MetadataWriter metadataWriter = new MetadataWriter(process);
+				metadataWriter.addLogger(this.logger);
+				metadataWriter.writeMetadata(reports.get(0).getMetadataEntries());
+			}
+
+		} catch (MetadataWriterException ex) {
+			logger.message(ex.getMessage(), LogType.ERROR);
+			successful = false;
 		} catch (IOException | InterruptedException | SwapException | DAOException e) {
+			successful = false;
+			e.printStackTrace();
+		} catch (JAXBException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        
-        log.info("PdfValidation step plugin executed");
-        if (!successful) {
-            return PluginReturnValue.ERROR;
-        }
-        return PluginReturnValue.FINISH;
-    } 
+
+		log.info("PdfValidation step plugin executed");
+		if (!successful) {
+			return PluginReturnValue.ERROR;
+		}
+		return PluginReturnValue.FINISH;
+	}
 }
-
-

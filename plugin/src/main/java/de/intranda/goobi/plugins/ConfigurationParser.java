@@ -11,6 +11,8 @@ import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.goobi.beans.Step;
 import org.jdom2.Namespace;
 
+import de.intranda.goobi.plugins.Validation.Check;
+import de.intranda.goobi.plugins.Validation.ValueReader;
 import de.sub.goobi.config.ConfigPlugins;
 import lombok.Getter;
 
