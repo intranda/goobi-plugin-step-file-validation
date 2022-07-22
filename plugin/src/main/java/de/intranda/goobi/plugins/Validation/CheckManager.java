@@ -26,35 +26,38 @@ import de.sub.goobi.helper.StorageProvider;
 
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
+import lombok.Getter;
+import lombok.Setter;
 
 public class CheckManager {
 
 	private HashMap<String, ToolConfiguration> toolConfigurations;
 	private List<List<Check>> ingestLevelChecks;
 	private List<List<ValueReader>> ingestLevelReaders;
-
+	@Getter
 	private Path outputPath;
 	private List<Path> pdfsInFolder = new ArrayList<>();
 	private List<LoggerInterface> loggers = new ArrayList<>();
 	private HashMap<String, List<Check>> checksGroupedByDependsOn = new LinkedHashMap<>();
 	private boolean runAllChecks = false;
 
-	private CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevelChecks, List<List<ValueReader>> ingestLevelReaders) {
+	private CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevelChecks, List<List<ValueReader>> ingestLevelReaders, String outputPath) {
 		this.toolConfigurations = toolsConfigurations;
 		this.ingestLevelChecks = ingestLevelChecks;
 		this.ingestLevelReaders = ingestLevelReaders;
+		this.outputPath = Paths.get(outputPath, System.currentTimeMillis() + "_xml");
 	}
 	
 	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,List<List<ValueReader>> ingestLevelReaders, Path outputPath) {
-		this(toolsConfigurations,ingestLevels,ingestLevelReaders);
-		this.outputPath = Paths.get(outputPath.toString(), System.currentTimeMillis() + "_xml");
+		this(toolsConfigurations,ingestLevels,ingestLevelReaders, outputPath.toString());
+		
 	}
 	
 	public CheckManager(HashMap<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevels,List<List<ValueReader>> ingestLevelReaders,
-			Process process, String fileFilter) throws IOException, InterruptedException, SwapException, DAOException {
-		this(toolsConfigurations,ingestLevels,ingestLevelReaders);
+			String outputPath, String inputFolder, String fileFilter) {
+		this(toolsConfigurations,ingestLevels,ingestLevelReaders, outputPath);
 		//TODO change to production/setting
-		this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles("/opt/digiverso/pdf", (path) -> {
+		this.pdfsInFolder.addAll(StorageProvider.getInstance().listFiles(inputFolder, (path) -> {
 			try {
 				if (path.getFileName().toString().matches(fileFilter)) {
 
@@ -66,9 +69,6 @@ public class CheckManager {
 				return false;
 			}
 		}));
-		// TODO fix this
-		String test = process.getProcessDataDirectory();
-		this.outputPath = Paths.get(test, "validation", System.currentTimeMillis() + "_xml");
 	}
 
 	public void addLogger(LoggerInterface logger) {

@@ -1,5 +1,6 @@
 package de.intranda.goobi.plugins;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Path;
@@ -33,6 +34,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import org.apache.commons.compress.utils.FileNameUtils;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.production.enums.LogType;
@@ -50,12 +52,20 @@ import de.intranda.goobi.plugins.Validation.Check;
 import de.intranda.goobi.plugins.Validation.CheckManager;
 import de.intranda.goobi.plugins.Validation.ValueReader;
 import de.sub.goobi.helper.StorageProvider;
+import de.sub.goobi.helper.StorageProviderInterface;
+import de.sub.goobi.helper.VariableReplacer;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
+import ugh.dl.Fileformat;
+import ugh.dl.Prefs;
+import ugh.exceptions.PreferencesException;
+import ugh.exceptions.ReadException;
+import ugh.exceptions.WriteException;
 
 @PluginImplementation
 @Log4j2
@@ -140,6 +150,14 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
 	public static Report validateFile(Path path) {
 		return validateFile(path, "*");
 	}
+	
+	private static String removeFileExtension(String fileName) {
+		if(fileName.lastIndexOf(".")>0) {
+			 return fileName.substring(0, fileName.lastIndexOf('.'));
+		}
+		else return fileName;
+				
+	}
 
 	public static Report validateFile(Path path, String institution) {
 		ConfigurationParser confParser = null;
@@ -150,10 +168,12 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
 			report = new Report(-1, "Error reading the Configuration File: " + ex.getMessage(),
 					path.getFileName().toString(), new ArrayList<ReportEntry>());
 		}
+		String fileName= removeFileExtension(path.getFileName().toString());
+		
 		HashMap<String, ToolConfiguration> toolConfigurations = confParser.getToolConfigurations();
 		List<List<Check>> levelWithChecks = confParser.getIngestLevelChecks();
 		List<List<ValueReader>> levelWithReaders = confParser.getIngestLevelReader();
-		Path outputPath = Paths.get(confParser.getOutputFolder());
+		Path outputPath = Paths.get(path.getParent().toString(),fileName);
 
 		// TODO more Checks for the Path maybe with Filter...
 		if (StorageProvider.getInstance().isFileExists(path)) {
@@ -170,8 +190,16 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
 	public PluginReturnValue run() {
 		boolean successful = true;
 		this.process = ProcessManager.getProcessById(step.getProcessId());
+
 		try {
-			CheckManager CManager = new CheckManager(tools, levelChecks, levelValueReaders, this.process,
+			Fileformat ff = step.getProzess().readMetadataFile();
+
+			Prefs prefs = step.getProzess().getRegelsatz().getPreferences();
+			VariableReplacer replacer = new VariableReplacer(ff.getDigitalDocument(), prefs, step.getProzess(), step);
+			String outputRootPath = replacer.replace(cParser.getOutputFolder());
+			String inputFolder = replacer.replace(cParser.getInputFolder());
+			
+			CheckManager CManager = new CheckManager(tools, levelChecks, levelValueReaders, outputRootPath, inputFolder,
 					cParser.getFileFiler());
 			CManager.addLogger(this.logger);
 			List<Report> reports = CManager.runChecks(cParser.getTargetLevel());
@@ -190,36 +218,45 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
 				}
 			}
 			
-			ListHolder Holder = new ListHolder();
-			Holder.setList(reports);
-			JAXBContext jaxbContext = JAXBContext.newInstance(ListHolder.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			StringWriter sw = new StringWriter();
-			// Marshal the employees list in console
-			jaxbMarshaller.marshal(Holder, sw);
-			String testString = sw.toString();
-			//jaxbMarshaller.marshal(employees, new File("c:/temp/employees.xml"));
-			
+			if (cParser.isWriteResult()) {
+				for(Report report : reports) {
+					JAXBContext jaxbContext = JAXBContext.newInstance(Report.class);
+					Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+					jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+					StringWriter sw = new StringWriter();
+					jaxbMarshaller.marshal(report, sw);
+					
+					//Check if Folder exists and if not try to create it
+					Path outputPath = CManager.getOutputPath();
+					StorageProviderInterface SPI = StorageProvider.getInstance();
+					if (!SPI.isFileExists(outputPath))
+						SPI.createDirectories(outputPath);
+					String fileName = removeFileExtension(report.getFileName());
+					fileName = fileName+"-result.xml";
+					
+					Path FileOutputPath = outputPath.resolve(fileName);
+					jaxbMarshaller.marshal(report, new File(FileOutputPath.toString()));
+				}
+			}
+					
 			if (successful) {
-
-
 				MetadataWriter metadataWriter = new MetadataWriter(process);
 				metadataWriter.addLogger(this.logger);
-				metadataWriter.writeMetadata(reports.get(0).getMetadataEntries());
+				metadataWriter.writeReportResults(reports);
 			}
 
 		} catch (MetadataWriterException ex) {
 			logger.message(ex.getMessage(), LogType.ERROR);
 			successful = false;
-		} catch (IOException | InterruptedException | SwapException | DAOException e) {
+		} catch (IOException | InterruptedException | SwapException | DAOException | PreferencesException e) {
 			successful = false;
-			e.printStackTrace();
 		} catch (JAXBException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			successful = false;
+			logger.message("Error writing report to filesystem", LogType.ERROR);
+		} catch (ReadException | WriteException e) {
+			successful = false;
+			logger.message("Error opening Preferences", LogType.ERROR);
 		}
-
 		log.info("PdfValidation step plugin executed");
 		if (!successful) {
 			return PluginReturnValue.ERROR;

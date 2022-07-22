@@ -1,15 +1,21 @@
 package de.intranda.goobi.plugins.Reporting;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import de.intranda.goobi.plugins.Validation.Check;
 import de.intranda.goobi.plugins.Validation.CheckStatus;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor
+@XmlRootElement(name = "reportEntry")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class ReportEntry {
 	@Getter @Setter
-	protected String checkName;
+	protected String name;
 	@Getter @Setter
 	protected String value;
 	@Getter @Setter
@@ -18,14 +24,14 @@ public class ReportEntry {
 	protected String message;
 	
 	public ReportEntry (Check check) {
-		this.checkName = check.getName();
+		this.name = check.getName();
 		this.status = check.getStatus();
 		this.value = (check.getValue()==null)? "":check.getValue();
 		this.message = (status!=CheckStatus.SUCCESS)? check.getCode(): "Check passed!";
 	}
 	
 	public ReportEntry(ReportEntry entry) {
-		this.checkName = entry.getCheckName();
+		this.name = entry.getName();
 		this.value = entry.getValue();
 		this.message = entry.getMessage();
 	}

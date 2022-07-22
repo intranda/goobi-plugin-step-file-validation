@@ -44,7 +44,7 @@ public class MetadataWriter {
 		}
 	}
 	
-	public void writeReportresults(List<Report> reports) throws MetadataWriterException{
+	public void writeReportResults(List<Report> reports) throws MetadataWriterException{
 		if (reports.size()==1) {
 			writeMetadata(reports.get(0).getMetadataEntries());
 		}else {
@@ -61,7 +61,7 @@ public class MetadataWriter {
 			List<MetadataEntry> entries = reports.get(i).getMetadataEntries();
 			HashMap<String, MetadataEntry> mappedEntries = new HashMap<>();
 			for (MetadataEntry entry: entries) {
-				mappedEntries.put(entry.getCheckName(),entry);
+				mappedEntries.put(entry.getName(),entry);
 			}
 			mappedEntriesList.add(mappedEntries);
 		}
@@ -73,9 +73,9 @@ public class MetadataWriter {
 			
 			// add Elements to HashMap or update existing Elements
 			for(MetadataEntry entry: mappedEntriesList.get(i).values()) {
-				MetadataEntry currentEntry = resultMap.get(entry.getCheckName());
+				MetadataEntry currentEntry = resultMap.get(entry.getName());
 				if (currentEntry==null) {
-					resultMap.put(entry.getCheckName(),new MetadataEntry(entry));
+					resultMap.put(entry.getName(),new MetadataEntry(entry));
 				}
 				else {
 					String message = currentEntry.getMessage()+"; "+entry.getMessage();
@@ -166,7 +166,7 @@ public class MetadataWriter {
 
 	private void addMetadata(DocStruct ds, String metsField, String value) {
 		if (StringUtils.isEmpty(value)) {
-			log("Error: value that should be save in metsField: " + metsField + " was empty. No entry was created!",
+			log("Error: value that should be saved in metsField: " + metsField + " was empty. No entry was created!",
 					LogType.ERROR);
 		}
 		Prefs prefs = process.getRegelsatz().getPreferences();

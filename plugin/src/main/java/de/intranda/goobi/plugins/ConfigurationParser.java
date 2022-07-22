@@ -35,11 +35,16 @@ public class ConfigurationParser {
 	private int targetLevel;
 	@Getter
 	private String outputFolder;
+	@Getter
+	private String inputFolder;
+	@Getter
+	private boolean writeResult;
 	
 	private List<String> parsedChecks;
 
 	public ConfigurationParser(String title, Step step) throws IllegalArgumentException {
 		SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
+		this.writeResult = myconfig.getBoolean("writeReport",true);
 		initialize(myconfig);
 	}
 
@@ -47,8 +52,8 @@ public class ConfigurationParser {
 		this.xmlConfig = ConfigPlugins.getPluginConfig(pluginName);
 		this.xmlConfig.setExpressionEngine(new XPathExpressionEngine());
 		SubnodeConfiguration myconfig = getConfiguration(institution);
-		this.outputFolder = myconfig.getString("outputFolder", "");
 		initialize(myconfig);
+		
 	}
 
 	private void initialize(SubnodeConfiguration myconfig) {
@@ -63,6 +68,8 @@ public class ConfigurationParser {
 		this.toolConfigurations = readToolConfigurations();
 		this.ingestLevelChecks = readChecks(profile);
 		this.ingestLevelReader = readValueReader(profile);
+		this.inputFolder = myconfig.getString("inputFolder", "");
+		this.outputFolder = myconfig.getString("outputFolder", "");
 	}
 
 	private HashMap<String, Namespace> readNamespaces() {
@@ -174,7 +181,7 @@ public class ConfigurationParser {
 
 	private HashMap<String, ToolConfiguration> readToolConfigurations() {
 		List<HierarchicalConfiguration> tools = this.parentConfig.configurationsAt("global/tools/tool");
-		HashMap<String, ToolConfiguration> Configurations = new HashMap();
+		HashMap<String, ToolConfiguration> Configurations = new HashMap<>();
 		for (HierarchicalConfiguration node : tools) {
 			String name = node.getString("@name", null);
 			String cmd = node.getString("@cmd", null);
