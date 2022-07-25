@@ -20,13 +20,20 @@ public class ToolRunner {
 	private ToolConfiguration toolConfiguration;
 	private Path outputPath;
 	private Process ToolProcess;
-	private StreamConsumer streamConsumer;
 
 	public ToolRunner(ToolConfiguration tc, Path outputPath) {
 		this.toolConfiguration = tc;
 		this.outputPath = outputPath;
 	}
 
+	/**
+	 * executes the tool for a given file and creates a report
+	 * 
+	 * @param pdfFile path to the pdf-file
+	 * @return returns a simpleEntry with the input and the output file path
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	public SimpleEntry<String, String> runTool(Path pdfFile) throws IOException, InterruptedException {
 		String inputName = pdfFile.getFileName().toString();
 		String outputName = inputName.substring(0, inputName.lastIndexOf('.')) + "_" + this.toolConfiguration.getName()

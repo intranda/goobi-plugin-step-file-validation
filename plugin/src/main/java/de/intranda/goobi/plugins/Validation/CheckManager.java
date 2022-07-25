@@ -72,11 +72,15 @@ public class CheckManager {
 		}));
 	}
 
+	/**
+	 * allows to add a logger of Type LoggerInterface to the Class
+	 * @param logger
+	 */	
 	public void addLogger(LoggerInterface logger) {
 		loggers.add(logger);
 	}
 
-	public void log(String message, LogType type) {
+	private void log(String message, LogType type) {
 		for (LoggerInterface logger : loggers) {
 			logger.message(message, type);
 		}
@@ -172,6 +176,13 @@ public class CheckManager {
 		return report;
 	}
 
+	/**
+	 * runs Checks on the givven file and retruns a report. If the targetlevel was reached the 
+	 * reachedTargetLevel Attribute of the report will be true.
+	 * @param targetLevel level which shall be reached
+	 * @param pathToFile path to the file that shall be checked
+	 * @return Report-Object
+	 */
 	public Report runChecks(int targetLevel, Path pathToFile) {
 		int reachedLevel = -1;
 		int endCheckOnLevel = (runAllChecks == true) ? ingestLevelChecks.size() - 1 : targetLevel;

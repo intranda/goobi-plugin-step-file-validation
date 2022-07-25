@@ -1,12 +1,5 @@
 package de.intranda.goobi.plugins;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-
 /**
  * This file is part of a plugin for Goobi - a Workflow tool for the support of mass digitization.
  *
@@ -26,15 +19,19 @@ import java.util.ArrayList;
  *
  */
 
+import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import org.apache.commons.compress.utils.FileNameUtils;
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.production.enums.LogType;
@@ -147,10 +144,6 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
 		return ret != PluginReturnValue.ERROR;
 	}
 
-	public static Report validateFile(Path path) {
-		return validateFile(path, "*");
-	}
-	
 	private static String removeFileExtension(String fileName) {
 		if(fileName.lastIndexOf(".")>0) {
 			 return fileName.substring(0, fileName.lastIndexOf('.'));
@@ -158,7 +151,14 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
 		else return fileName;
 				
 	}
-
+	
+	/**
+	 * This function will create a folder with reports in the folder where the file is located
+	 * It will also return a report-object that contains lists with entries of report and metadata entries.
+	 * @param path path to the file
+	 * @param institution name of the institution to select the right profile.
+	 * @return Report with ReportEntries, MetadataEntries, reachedlevel 
+	 */
 	public static Report validateFile(Path path, String institution) {
 		ConfigurationParser confParser = null;
 		Report report;

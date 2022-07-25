@@ -35,16 +35,27 @@ public class MetadataWriter {
 		this.process = process;
 	}
 
+	/**
+	 * allows to add a logger of Type LoggerInterface to the Class
+	 * @param logger
+	 */
 	public void addLogger(LoggerInterface logger) {
 		loggers.add(logger);
 	}
 
-	public void log(String message, LogType type) {
+	private void log(String message, LogType type) {
 		for (LoggerInterface logger : loggers) {
 			logger.message(message, type);
 		}
 	}
 	
+	/**
+	 * Writes the Values in the setValue Elements into the specified Metadata fields of 
+	 * the TopStruct Element or into the specified process property. If more than one report is provieded
+	 * alle values are crammed into one field
+	 * @param reports
+	 * @throws MetadataWriterException
+	 */
 	public void writeReportResults(List<Report> reports) throws MetadataWriterException{
 		if (reports.size()==1) {
 			writeMetadata(reports.get(0).getMetadataEntries());
@@ -112,8 +123,7 @@ public class MetadataWriter {
 	}
 	
 
-
-	public void writeMetadata(List<MetadataEntry> entries) throws MetadataWriterException {
+	private void writeMetadata(List<MetadataEntry> entries) throws MetadataWriterException {
 		// TODO catch empty entries if needed
 		for (MetadataEntry entry : entries) {
 			if (StringUtils.isNotBlank(entry.getProcessProperty())) {

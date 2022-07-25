@@ -49,6 +49,14 @@ public class Check {
 		this.regEx = regEx;
 	}
 	
+	/**
+	 * runs the check on a given JDOM Document. If the node exists an no regex is provided the status of the check
+	 * will be switched to success. If a regex is provided the status of the check will only switch to success if
+	 * the value matches the pattern
+	 * 
+	 * @param doc
+	 * @return ReportEntry with relevant data of the check process
+	 */
 	public ReportEntry run(Document doc) {		
 		Object value = xpath.evaluateFirst(doc);
 		
