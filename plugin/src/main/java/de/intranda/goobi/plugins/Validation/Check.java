@@ -42,9 +42,9 @@ public class Check {
 		this.tool = tool;
 		this.code = code;
 		if (namespace == null) {
-			xpath = XPathFactory.instance().compile(xpathSelector);
+			this.xpath = XPathFactory.instance().compile(xpathSelector);
 		}else {
-			xpath = XPathFactory.instance().compile(xpathSelector,Filters.fpassthrough(),null,namespace);
+			this.xpath = XPathFactory.instance().compile(xpathSelector,Filters.fpassthrough(),null,namespace);
 		}
 		this.regEx = regEx;
 	}

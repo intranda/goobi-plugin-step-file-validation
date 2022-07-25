@@ -7,6 +7,7 @@ import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jdom2.Text;
 
+import de.intranda.goobi.plugins.Reporting.MetadataEntry;
 import de.intranda.goobi.plugins.Reporting.ReportEntry;
 import lombok.Getter;
 
@@ -42,7 +43,7 @@ public class ValueReader extends Check {
 		} else {
 			this.status = CheckStatus.FAILED;
 		}
-		return new ReportEntry(this);
+		return new MetadataEntry(this);
 	}
 	
 	public void save(Process process) {
