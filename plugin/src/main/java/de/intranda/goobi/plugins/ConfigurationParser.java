@@ -40,7 +40,7 @@ public class ConfigurationParser {
 	@Getter
 	private boolean writeResult;
 	
-	private List<String> parsedChecks;
+	private List<String> parsedChecks = new ArrayList<String>();
 
 	public ConfigurationParser(String title, Step step) throws IllegalArgumentException {
 		SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
@@ -91,7 +91,6 @@ public class ConfigurationParser {
 	}
 
 	private List<List<Check>> readChecks(String profile) throws IllegalArgumentException {
-		List<String> parsedChecks = new ArrayList<String>();
 		List<List<Check>> ingestLevels = new ArrayList<List<Check>>();
 		List<HierarchicalConfiguration> level = readProfile(profile);
 		for (HierarchicalConfiguration node : level) {
@@ -133,11 +132,11 @@ public class ConfigurationParser {
 	}
 	
 	private List<List<ValueReader>> readValueReader(String profile) throws IllegalArgumentException {
-		List<List<ValueReader>> ingestLevels = new ArrayList<List<ValueReader>>();
+		List<List<ValueReader>> ingestLevelReaders = new ArrayList<List<ValueReader>>();
 		List<HierarchicalConfiguration> level = readProfile(profile);
 		for (HierarchicalConfiguration node : level) {
 
-			List<ValueReader> checkList = new ArrayList<ValueReader>();
+			List<ValueReader> readerList = new ArrayList<ValueReader>();
 			List<HierarchicalConfiguration> valueReaderNodes = node.configurationsAt("setValue");
 			for (HierarchicalConfiguration checkNode : valueReaderNodes) {
 				String tool = checkNode.getString("@tool", null);
@@ -147,7 +146,7 @@ public class ConfigurationParser {
 					throw new IllegalArgumentException(
 							"setValue Elements have to depend on a Check. Please correct setValue-Element: "+ name);
 				}
-				String group = checkNode.getString("@group", null);
+				String group = null;
 				if (dependsOn != null) {
 					if (!parsedChecks.stream().anyMatch(checkName -> checkName.equals(dependsOn)))
 						throw new IllegalArgumentException(
@@ -156,7 +155,7 @@ public class ConfigurationParser {
 				}
 				String code = checkNode.getString("@code", null);
 				String xpathSelector = checkNode.getString("@xpathSelector", null);
-				String regEx = checkNode.getString("@regEx", null);
+				String regEx = null;
 				// maybe it's handy to be able to redefine the namespace in the Check
 				// so we add this attribute
 				String xmlNamespace = node.getString("@xmlNamespace", null);
@@ -171,12 +170,12 @@ public class ConfigurationParser {
 					namespace = this.namespaces.get(xmlNamespace);
 				}
 
-				ValueReader check = new ValueReader(name, dependsOn, group, tool, code, xpathSelector, regEx, namespace, processProperty, mets);
-				checkList.add(check);
+				ValueReader reader = new ValueReader(name, dependsOn, group, tool, code, xpathSelector, regEx, namespace, processProperty, mets);
+				readerList.add(reader);
 			}
-			ingestLevels.add(checkList);
+			ingestLevelReaders.add(readerList);
 		}
-		return ingestLevels;
+		return ingestLevelReaders;
 	}
 
 	private HashMap<String, ToolConfiguration> readToolConfigurations() {

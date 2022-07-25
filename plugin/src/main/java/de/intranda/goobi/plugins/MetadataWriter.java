@@ -3,6 +3,7 @@ package de.intranda.goobi.plugins;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -48,7 +49,9 @@ public class MetadataWriter {
 		if (reports.size()==1) {
 			writeMetadata(reports.get(0).getMetadataEntries());
 		}else {
-			HashMap<String,MetadataEntry> report = generateSummaryReport(reports);
+			HashMap<String,MetadataEntry> reportMap = generateSummaryReport(reports);
+			if (reportMap !=null)
+				writeMetadata(new ArrayList<MetadataEntry> (reportMap.values()));
 		}
 	}
 	
@@ -75,7 +78,17 @@ public class MetadataWriter {
 			for(MetadataEntry entry: mappedEntriesList.get(i).values()) {
 				MetadataEntry currentEntry = resultMap.get(entry.getName());
 				if (currentEntry==null) {
-					resultMap.put(entry.getName(),new MetadataEntry(entry));
+					MetadataEntry NewEntry = new MetadataEntry(entry);
+					if (i>0) {
+						//add ; for each report that was handled before this entry was added
+						StringBuilder sb = new StringBuilder();
+						for (int reportNumber = 0;reportNumber<i;reportNumber++) {
+							sb.append(" ;");
+						}
+						sb.append(NewEntry.getValue()+";");
+						NewEntry.setValue(sb.toString());
+					}
+					resultMap.put(entry.getName(),NewEntry);
 				}
 				else {
 					String message = currentEntry.getMessage()+"; "+entry.getMessage();
@@ -147,7 +160,6 @@ public class MetadataWriter {
 			ff = this.process.readMetadataFile();
 			// first get the top element
 			ds = ff.getDigitalDocument().getLogicalDocStruct();
-			DocStruct physical = ff.getDigitalDocument().getPhysicalDocStruct();
 
 			// find topstruct to add metadata
 			if (ds.getType().isAnchor()) {
@@ -176,7 +188,7 @@ public class MetadataWriter {
 			metadatata.setValue(value);
 			ds.addMetadata(metadatata);
 		} catch (MetadataTypeNotAllowedException e) {
-			log("Error: metadata type " + metsField + " is not allowed for the TopStruct. Please update ruleset.",
+			log("Error: metadata type " + metsField + " is not allowed for the TopStruct. Please update ruleset or the configuration file.",
 					LogType.ERROR);
 		}
 	}

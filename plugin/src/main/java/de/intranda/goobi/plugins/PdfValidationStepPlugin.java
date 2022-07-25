@@ -251,11 +251,12 @@ public class PdfValidationStepPlugin implements IStepPluginVersion2 {
 		} catch (IOException | InterruptedException | SwapException | DAOException | PreferencesException e) {
 			successful = false;
 		} catch (JAXBException e) {
+			logger.message(e.getMessage(), LogType.DEBUG);
 			successful = false;
-			logger.message("Error writing report to filesystem", LogType.ERROR);
+			logger.message("Error writing report to filesystem", LogType.DEBUG);
 		} catch (ReadException | WriteException e) {
 			successful = false;
-			logger.message("Error opening Preferences", LogType.ERROR);
+			logger.message("Error opening Preferences" + e.getMessage(), LogType.DEBUG);
 		}
 		log.info("PdfValidation step plugin executed");
 		if (!successful) {
