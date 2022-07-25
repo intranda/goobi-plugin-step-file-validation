@@ -2,65 +2,161 @@
 	<!-- order of configuration is: 1.) project name and step name matches 2.) 
 		step name matches and project is * 3.) project name matches and step name 
 		is * 4.) project name and step name are * -->
-
+		
 	<config>
 		<!-- which projects to use for (can be more then one, otherwise use *) -->
 		<project>*</project>
+		<!-- which stepss to use for (can be more then one, otherwise use *) -->
 		<step>*</step>
-		<!--folder>Folder with PDF</folder -->
+		<!-- input folder where the documents are located, is only used in the STEP-Plugin -->
+		<inputFolder>/opt/digiverso/pdf</inputFolder>
+		<!-- outputfolder where the folder with the tool reports will be created, is only used in the STEP-Plugin --> 
+		<outputFolder>{processpath}/validation</outputFolder>
+		<!-- fileFilter: regex-Pattern that allows to filter by filename and fileextension -->
 		<fileFilter>.*\.pdf</fileFilter>
+		<!-- name of the profile that shall be used by this config blog -->
+		<profileName>testprofile</profileName>
+		<!--targetLevel that must be reached for a successful plugin run -->
+		<targetLevel>0</targetLevel>
+	<config>
+	</config>
+		<!-- which institution to use for (can be more then one, otherwise use *) -->
+		<institution>*</institution>
 		<profileName>testprofile</profileName>
 		<targetLevel>0</targetLevel>
+
 	</config>
-
+	
+	<!-- global has the child elements
+		profile, namespaces and tools
+		
+		profile contains the definition of the ingest levels. It also has the attribute name, 
+		so you can refer to the profile in the config-blog element profileName 
+		the order of the levels defines their numbering, the first level element defines level zero and so on.
+		
+		a level element can contain check- and setValue- elements.
+		
+		a check element has following attributes
+			name:		name of the check
+			dependsOn:	name of the check that must have been successful, if this check shall be executed
+					a check can only depend on a check that was defined before it.
+					the parameter is optional
+			tool:	name of the tool that must be executed to create the report
+			group:  checks can be grouped. grouped checks are OR-operated which means, that the level won't fail if one check
+				of the group is successful. ( i.e. check for isPDF-A and isPDFx in one level)
+			code:	Errorcode or Errormessage that shall be displayed when the check fails /regex doesn't match node does not exist
+			xpathSelector: xpathSelector to selct the node or attribute value
+			regex:	regular expression that will be matched with the read value, if no regular expression is
+				provided the check will only test if the node exists.
+			namespace: (only needed if the specified check uses another namespace than the tool and if 
+					namespaces are used)
+					
+		a setValue element has following attributes
+			name:		name of the check
+			dependsOn:	name of the check that must have been successful if this setValue-Element shall be executed
+					a setValue-Element can only depend on a check not on other setValue Elements. set value Elements will always be 
+					executed after the checks.
+					the parameter is mandatory
+			tool:	name of the tool that must have ben executed to create the report
+			code:	Errorcode or Errormessage that shall be displayed when value retrival fails.
+			xpathSelector: xpathSelector to selct an attribute value
+			namespace: (only needed if the specified setValue-Element uses another namespace than the tool and if 
+					namespaces are used)
+					
+		a tools element contains multiple tool elements
+		a tool element hast the attributes
+			name:		name of the tool
+			cmd:		the command that must be run to create the xml report. you can use the {pv.outputFile} variable to refer to 
+			stdout:		if stdout is true, the reportfile will be generated from the commandline output of the file. if it is set to false 
+					the plugins assumes the tool is able to create the file by itself
+			xmlNamespace:	the name of the xml-namespace the generated report uses "jhove"
+		
+		a namespaces element can contain multiple namespace elements
+		a namespace element has the attributes:
+			name: 	the name of the xml namespace used in the xml and to address it in xmlNamespace attributes of tool-, check- and setValue-Elements 
+			uri:	the uri of the xml namespace
+	-->
 	<global>
-		<profile name="testprofile">
+		<profile name="testprofile" >
 			<level>
-				<check name="checkVersion" group="test" tool="jhove"
-					code="The Version of the PDF-File is not supported"
+				<check name="checkVersion"
+					tool="jhove" 
+					code="The Version of the PDF-File is not supported" 
 					xpathSelector="//jhove:repInfo/jhove:version"
-					regEx="^1\.[012456]$|^2\.0$" />
-
-				<check name="featureReportCreated" group="test"
-					dependsOn="checkVersion" tool="verapdf"
-					code="The Value of this node is not 1"
-					xpathSelector="//report/batchSummary/featureReports" regEx="0" />
-
-				<check name="featureReportCreated2"
-					dependsOn="featureReportCreated" tool="verapdf"
-					code="The node featureReports3 does not exist"
-					xpathSelector="//report/batchSummary/featureReports3" />
-
+					regEx="^1\.[012456]$|^2\.0$" 
+				/>
+			
+				<check name="featureReportCreated"
+					dependsOn="checkVersion"
+					group="uselessGroup"
+					tool="verapdf" 
+					code="The Value of this node is not 1" 
+					xpathSelector="//report/batchSummary/featureReports"
+					regEx="0" 
+				/>
+				
+				<setValue name="readPdfVersion"
+					dependsOn="checkVersion"
+					tool="jhove"
+					code="Could not read Version Information!"
+					xpathSelector="//jhove:repInfo/jhove:version"
+					processProperty="PDFVersion"
+					mets="OtherTitle"
+				/>						
+				<check name="featureReportNodeExists"
+					group="uselessGroup"
+					dependsOn="featureReportCreated"
+					tool="verapdf" 
+					code="The node featureReports3 does not exist" 
+					xpathSelector="//report/batchSummary/featureReports3" 
+				/>
+			
 			</level>
 			<level>
-				<check name="checkEncryption" tool="jhove"
-					code="validation_failed"
-					xpathSelector="//jhove:repInfo/jhove:properties/jhove:property[name='Encryption']" />
+			<!--
+				<!check name="checkEncryption"
+					tool="jhove" 
+					code="validation_failed" 
+					xpathSelector="//jhove:repInfo/jhove:properties/jhove:property[name='Encryption']"
+				/>
+			-->
 			</level>
 			<level>
-				<check name="isValid" tool="jhove" code="validation_failed"
+			<!--
+				<check name="isValid"
+					tool="jhove" 
+					code="validation_failed" 
 					xpathSelector="//jhove:repInfo/jhove:status"
-					regex="Well-Formed and valid" />
-				<check name="pdf-a validation" tool="verapdf"
-					code="pdfa_validation_failed" xpathSelector="xpathSelector"
-					regEx="regEx" />
+					regex="Well-Formed and valid"
+				/>
+				<check name="pdf-a validation"
+					tool="verapdf" 
+					code="pdfa_validation_failed" 
+					xpathSelector="xpathSelector"
+					regEx="regEx" 
+				/>
+			-->
 			</level>
 
 		</profile>
 		<namespaces>
-			<namespace name="jhove"
-				uri="http://schema.openpreservation.org/ois/xml/ns/jhove" />
+			<namespace name="jhove" uri="http://schema.openpreservation.org/ois/xml/ns/jhove" />
 		</namespaces>
 		<tools>
-			<tool name="jhove"
+			<tool name="jhove" 
 				cmd="/opt/digiverso/tools/jhove/jhove -h XML -m PDF-hul -o {pv.outputFile} {pv.inputFile}"
-				stdout="false" xmlNamespace="jhove" />
-			<tool name="verapdf"
+				stdout="false"
+				xmlNamespace ="jhove"
+			 />
+			<tool name="verapdf" 
 				cmd="/home/michael/verapdf/verapdf --format mrr {pv.inputFile}"
-				stdout="true" />
-			<tool name="pdfinfoXml" cmd="/opt/digiverso/tools/"
-				stdout="true" />
-
+				stdout="true"
+			 />
+			<tool name="pdfinfoXml" 
+				cmd="/opt/digiverso/tools/"
+				stdout="true"
+			 /> 
+			
 		</tools>
 	</global>
 </config_plugin>
