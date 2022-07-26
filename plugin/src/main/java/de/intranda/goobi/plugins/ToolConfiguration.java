@@ -6,8 +6,8 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class ToolConfiguration {
-	private String name;
-	private String cmd;
-	private boolean stdout;
-	private String xmlNamespace;
+    private String name;
+    private String cmd;
+    private boolean stdout;
+    private String xmlNamespace;
 }

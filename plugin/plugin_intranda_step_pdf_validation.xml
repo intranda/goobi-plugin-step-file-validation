@@ -144,12 +144,12 @@
 		</namespaces>
 		<tools>
 			<tool name="jhove" 
-				cmd="/opt/digiverso/tools/jhove/jhove -h XML -m PDF-hul -o {pv.outputFile} {pv.inputFile}"
+				cmd="/usr/bin/jhove -h XML -m PDF-hul -o {pv.outputFile} {pv.inputFile}"
 				stdout="false"
 				xmlNamespace ="jhove"
 			 />
 			<tool name="verapdf" 
-				cmd="/home/michael/verapdf/verapdf --format mrr {pv.inputFile}"
+				cmd="/home/robert/verapdf/verapdf --format mrr {pv.inputFile}"
 				stdout="true"
 			 />
 			<tool name="pdfinfoXml" 
