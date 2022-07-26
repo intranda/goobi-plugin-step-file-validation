@@ -1,5 +1,6 @@
-package de.intranda.goobi.plugins.validation;
+package org.goobi.validation;
 
+import org.goobi.reporting.ReportEntry;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -9,7 +10,6 @@ import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
 
-import de.intranda.goobi.plugins.reporting.ReportEntry;
 import lombok.Getter;
 import lombok.Setter;
 

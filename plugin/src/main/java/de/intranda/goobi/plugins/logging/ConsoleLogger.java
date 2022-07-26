@@ -1,5 +1,6 @@
 package de.intranda.goobi.plugins.logging;
 
+import org.goobi.logging.LoggerInterface;
 import org.goobi.production.enums.LogType;
 
 public class ConsoleLogger implements LoggerInterface {

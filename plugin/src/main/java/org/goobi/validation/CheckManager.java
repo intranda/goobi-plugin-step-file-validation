@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins.validation;
+package org.goobi.validation;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,17 +11,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.goobi.configuration.ToolConfiguration;
+import org.goobi.files.ToolRunner;
+import org.goobi.logging.LoggerInterface;
 import org.goobi.production.enums.LogType;
+import org.goobi.reporting.MetadataEntry;
+import org.goobi.reporting.Report;
+import org.goobi.reporting.ReportEntry;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
-import de.intranda.goobi.plugins.ToolConfiguration;
-import de.intranda.goobi.plugins.ToolRunner;
-import de.intranda.goobi.plugins.logging.LoggerInterface;
-import de.intranda.goobi.plugins.reporting.MetadataEntry;
-import de.intranda.goobi.plugins.reporting.Report;
-import de.intranda.goobi.plugins.reporting.ReportEntry;
 import de.sub.goobi.helper.StorageProvider;
 import lombok.Getter;
 

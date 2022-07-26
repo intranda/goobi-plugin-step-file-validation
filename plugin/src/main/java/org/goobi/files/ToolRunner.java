@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins;
+package org.goobi.files;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.concurrent.TimeUnit;
+
+import org.goobi.configuration.ToolConfiguration;
 
 import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.StorageProviderInterface;

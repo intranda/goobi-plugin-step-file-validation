@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins;
+package org.goobi.configuration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,10 +9,10 @@ import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.goobi.beans.Step;
+import org.goobi.validation.Check;
+import org.goobi.validation.ValueReader;
 import org.jdom2.Namespace;
 
-import de.intranda.goobi.plugins.validation.Check;
-import de.intranda.goobi.plugins.validation.ValueReader;
 import de.sub.goobi.config.ConfigPlugins;
 import lombok.Getter;
 

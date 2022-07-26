@@ -1,14 +1,14 @@
-package de.intranda.goobi.plugins.validation;
+package org.goobi.validation;
 
 import org.goobi.beans.Process;
+import org.goobi.reporting.MetadataEntry;
+import org.goobi.reporting.ReportEntry;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jdom2.Text;
 
-import de.intranda.goobi.plugins.reporting.MetadataEntry;
-import de.intranda.goobi.plugins.reporting.ReportEntry;
 import lombok.Getter;
 
 public class ValueReader extends Check {

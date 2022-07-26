@@ -1,6 +1,7 @@
 package de.intranda.goobi.plugins.logging;
 
 import org.goobi.beans.Process;
+import org.goobi.logging.LoggerInterface;
 import org.goobi.production.enums.LogType;
 
 import de.sub.goobi.helper.Helper;

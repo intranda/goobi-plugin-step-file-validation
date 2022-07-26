@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins.validation;
+package org.goobi.validation;
 
 public enum CheckStatus {
     NEW,

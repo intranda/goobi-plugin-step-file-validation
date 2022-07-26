@@ -9,11 +9,11 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.goobi.beans.Process;
 import org.goobi.beans.Processproperty;
+import org.goobi.logging.LoggerInterface;
 import org.goobi.production.enums.LogType;
+import org.goobi.reporting.MetadataEntry;
+import org.goobi.reporting.Report;
 
-import de.intranda.goobi.plugins.logging.LoggerInterface;
-import de.intranda.goobi.plugins.reporting.MetadataEntry;
-import de.intranda.goobi.plugins.reporting.Report;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.PropertyManager;

@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins;
+package org.goobi.configuration;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

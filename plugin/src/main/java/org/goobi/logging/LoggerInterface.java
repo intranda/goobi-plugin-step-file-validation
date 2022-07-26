@@ -1,4 +1,4 @@
-package de.intranda.goobi.plugins.logging;
+package org.goobi.logging;
 
 import org.goobi.production.enums.LogType;
 

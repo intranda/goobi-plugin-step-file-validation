@@ -1,11 +1,12 @@
-package de.intranda.goobi.plugins.reporting;
+package org.goobi.reporting;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import de.intranda.goobi.plugins.validation.Check;
-import de.intranda.goobi.plugins.validation.CheckStatus;
+import org.goobi.validation.Check;
+import org.goobi.validation.CheckStatus;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
