@@ -26,6 +26,13 @@ pipeline {
         recordIssues enabledForFailure: true, aggregatingResults: true, tools: [java(), javaDoc()]
       }
     }
+
+    stage('deploy') {
+      steps {
+        sh 'mvn -f plugin/pom.xml deploy'
+      }
+    }
+
   }
   
   post {

@@ -8,20 +8,25 @@
     <goobi.version>22.05.7</goobi.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-  <distributionManagement>
-    <repository>
-      <id>intranda-releases</id>
-      <url>https://nexus.intranda.com/repository/maven-releases</url>
-    </repository>
-  </distributionManagement>
   <repositories>
     <repository>
       <id>intranda-public</id>
       <url>https://nexus.intranda.com/repository/maven-public</url>
     </repository>
   </repositories>
+  <distributionManagement>
+    <repository>
+      <id>intranda-releases</id>
+      <url>https://nexus.intranda.com/repository/maven-releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>intranda-snapshots</id>
+      <url>https://nexus.intranda.com/repository/maven-snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
   <modules>
     <module>module-main</module>
+    <module>module-gui</module>
   </modules>
   <dependencies>
     <dependency>
