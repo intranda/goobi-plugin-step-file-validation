@@ -4,7 +4,7 @@
 	<artifactId>file_validation-main</artifactId>
 	<version>1.1.0-SNAPSHOT</version>
 	<properties>
-		<jar.name>plugin_intranda_step_pdf_validation</jar.name>
+		<jar.name>plugin_intranda_step_file_validation</jar.name>
 		<dest.folder>/opt/digiverso/goobi/plugins/step/</dest.folder>
 	</properties>
 	<parent>
@@ -102,7 +102,7 @@
 		</plugins>
 	</build>
 	<scm>
-		<url>scm:git:ssh://git@gitea.intranda.com:goobi-workflow/goobi-plugin-step-pdf_validation.git</url>
-		<connection>scm:git:ssh://git@gitea.intranda.com:goobi-workflow/goobi-plugin-step-pdf_validation.git</connection>
+		<url>scm:git:ssh://git@gitea.intranda.com:goobi-workflow/goobi-plugin-step-file-validation.git</url>
+		<connection>scm:git:ssh://git@gitea.intranda.com:goobi-workflow/goobi-plugin-step-file-validation.git</connection>
 	</scm>
 </project>
