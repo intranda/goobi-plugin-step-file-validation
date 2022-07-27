@@ -65,10 +65,10 @@ import ugh.exceptions.WriteException;
 
 @PluginImplementation
 @Log4j2
-public class PdfValidationStepPlugin implements IStepPluginVersion2 {
+public class FileValidationStepPlugin implements IStepPluginVersion2 {
 
     @Getter
-    private String title = "intranda_step_pdf_validation";
+    private String title = "intranda_step_file_validation";
     @Getter
     private Step step;
     @Getter
