@@ -14,7 +14,6 @@ import org.goobi.production.enums.LogType;
 import org.goobi.reporting.MetadataEntry;
 import org.goobi.reporting.Report;
 
-import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.PropertyManager;
 import ugh.dl.DocStruct;
@@ -174,7 +173,7 @@ public class MetadataWriter {
             }
 
             process.writeMetadataFile(ff);
-        } catch (ReadException | PreferencesException | WriteException | IOException | InterruptedException | SwapException | DAOException e) {
+        } catch (ReadException | PreferencesException | WriteException | IOException | SwapException e) {
             throw new MetadataWriterException("Error opening Metadatfile or getting logical Docstruct", e);
         }
 

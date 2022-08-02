@@ -51,7 +51,6 @@ import de.intranda.goobi.plugins.logging.ProcessLogger;
 import de.sub.goobi.helper.StorageProvider;
 import de.sub.goobi.helper.StorageProviderInterface;
 import de.sub.goobi.helper.VariableReplacer;
-import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
 import lombok.Getter;
@@ -61,7 +60,6 @@ import ugh.dl.Fileformat;
 import ugh.dl.Prefs;
 import ugh.exceptions.PreferencesException;
 import ugh.exceptions.ReadException;
-import ugh.exceptions.WriteException;
 
 @PluginImplementation
 @Log4j2
@@ -205,13 +203,13 @@ public class FileValidationStepPlugin implements IStepPluginVersion2 {
         } catch (MetadataWriterException ex) {
             logger.message(ex.getMessage(), LogType.ERROR);
             successful = false;
-        } catch (IOException | InterruptedException | SwapException | DAOException | PreferencesException e) {
+        } catch (IOException | InterruptedException | SwapException | PreferencesException e) {
             successful = false;
         } catch (JAXBException e) {
             logger.message(e.getMessage(), LogType.DEBUG);
             successful = false;
             logger.message("Error writing report to filesystem", LogType.DEBUG);
-        } catch (ReadException | WriteException e) {
+        } catch (ReadException e) {
             successful = false;
             logger.message("Error opening Preferences" + e.getMessage(), LogType.DEBUG);
         }
