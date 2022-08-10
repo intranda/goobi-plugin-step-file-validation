@@ -190,7 +190,9 @@ public class CheckManager {
     public Report runChecks(int targetLevel, Path pathToFile) {
         int reachedLevel = -1;
         int endCheckOnLevel = (runAllChecks) ? ingestLevelChecks.size() - 1 : targetLevel;
-
+        if (targetLevel > ingestLevelChecks.size()-1) {
+            endCheckOnLevel= ingestLevelChecks.size()-1;
+        }
         String fileName = pathToFile.getFileName().toString();
         SAXBuilder jdomBuilder = new SAXBuilder();
         jdomBuilder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
