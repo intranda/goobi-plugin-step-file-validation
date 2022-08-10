@@ -129,13 +129,20 @@
 					xpathSelector="//jhove:repInfo/jhove:size"
 					processProperty="Filesize"
 				/>
+				<setValue name="EPUBVersion"
+					dependsOn="isEPUB"
+					tool="jhove"
+					code="Could not read Version Information!"
+					xpathSelector="//jhove:repInfo/jhove:version"
+					processProperty="EPUBVersion"
+				/>
 				<setValue name="FilesizeEPUB"
 					dependsOn="isEPUB"
 					tool="jhove"
 					code="Couldn't obtain Filesize"
-					xpathSelector="//jhove:repInfo/jhove:version"
-					processProperty="EPUBVersion"
-				/>		
+					xpathSelector="//jhove:repInfo/jhove:size"
+					processProperty="Filesize"
+				/>	
 			</level>
 			<level>
 			<!-- 4 V Validity -->
