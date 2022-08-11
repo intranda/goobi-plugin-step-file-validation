@@ -96,8 +96,12 @@ public class ConfigurationParser {
             List<Check> checkList = new ArrayList<>();
             List<HierarchicalConfiguration> checkNodes = node.configurationsAt("check");
             for (HierarchicalConfiguration checkNode : checkNodes) {
-                String tool = checkNode.getString("@tool", null);
                 String name = checkNode.getString("@name", null);
+                String tool = checkNode.getString("@tool", null);
+                if (this.toolConfigurations.get(tool)== null) {
+                    throw new IllegalArgumentException(
+                            "You have to define a tool with the name:" + tool + " checkName: " + name + " Please update the configuration file.");
+                }
                 String dependsOn = checkNode.getString("@dependsOn", null);
                 String group = checkNode.getString("@group", null);
                 if (dependsOn != null && parsedChecks.stream().noneMatch(checkName -> checkName.equals(dependsOn))) {
@@ -138,6 +142,10 @@ public class ConfigurationParser {
             for (HierarchicalConfiguration checkNode : valueReaderNodes) {
                 String tool = checkNode.getString("@tool", null);
                 String name = checkNode.getString("@name", null);
+                if (this.toolConfigurations.get(tool)== null) {
+                    throw new IllegalArgumentException(
+                            "You have to define a tool with the name:" + tool + " checkName: " + name + " Please update the configuration file.");
+                }
                 String dependsOn = checkNode.getString("@dependsOn", null);
                 if (dependsOn == null) {
                     throw new IllegalArgumentException("setValue Elements have to depend on a Check. Please correct setValue-Element: " + name);
