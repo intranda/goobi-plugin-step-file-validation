@@ -37,7 +37,7 @@ pipeline {
   
   post {
     success {
-      archiveArtifacts artifacts: '**/target/*.jar, */plugin_*.xml, plugin_*.xml, */namedKeys.awk, */pdfinfogawk.sh', fingerprint: true, onlyIfSuccessful: true
+      archiveArtifacts artifacts: '**/target/*.jar, */plugin_*.xml, plugin_*.xml, */filegawk.sh, */fileFormat.awk, */namedKeys.awk, */pdfinfogawk.sh', fingerprint: true, onlyIfSuccessful: true
     }
     changed {
       emailext(
