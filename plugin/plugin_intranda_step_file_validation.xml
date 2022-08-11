@@ -85,21 +85,20 @@
 			<level>
 				<!-- 1 ID Document with JHOVE -->
 				<check name="isPDF"
-					tool="jhove"
+					tool="file"
 					group="fileformat"
 					code="This is not a PDF-File" 
-					xpathSelector="//jhove:repInfo/jhove:format"
-					regEx="(?i)pdf$" 
+					xpathSelector="//format"
+					regEx="(?i)^pdf document.*" 
 				/>
 				
 				<check name="isEPUB"
-					tool="jhove" 
+					tool="file" 
 					group="fileformat"
 					code="This is not an EPUB-File" 
-					xpathSelector="//jhove:repInfo/jhove:format"
-					regEx="(?i)epub$" 
+					xpathSelector="//format"
+					regEx="(?i)^epub document.*" 
 				/>
-			
 			</level>
 			<level>	
 				<!-- 2 BF check for encryption or access restrictions -->
@@ -117,28 +116,28 @@
 
 				<setValue name="PdfVersion"
 					dependsOn="isPDF"
-					tool="jhove"
+					tool="jhove_pdf"
 					code="Could not read Version Information!"
 					xpathSelector="//jhove:repInfo/jhove:version"
 					processProperty="PDFVersion"
 				/>
 				<setValue name="FilesizePDF"
 					dependsOn="isPDF"
-					tool="jhove"
+					tool="jhove_pdf"
 					code="Couldn't obtain Filesize"
 					xpathSelector="//jhove:repInfo/jhove:size"
 					processProperty="Filesize"
 				/>
 				<setValue name="EPUBVersion"
 					dependsOn="isEPUB"
-					tool="jhove"
+					tool="jhove_epub"
 					code="Could not read Version Information!"
 					xpathSelector="//jhove:repInfo/jhove:version"
 					processProperty="EPUBVersion"
 				/>
 				<setValue name="FilesizeEPUB"
 					dependsOn="isEPUB"
-					tool="jhove"
+					tool="jhove_epub"
 					code="Couldn't obtain Filesize"
 					xpathSelector="//jhove:repInfo/jhove:size"
 					processProperty="Filesize"
@@ -148,21 +147,21 @@
 			<!-- 4 V Validity -->
 				<check name="checkPDFVersion"
 					dependsOn="isPDF"
-					tool="jhove" 
+					tool="jhove_pdf" 
 					code="The Version of the PDF-File is not supported by this Version of JHOVE" 
 					xpathSelector="//jhove:repInfo/jhove:version"
 					regEx="^1\.[012456]$|^2\.0$" 
 				/>
 				<check name="isValidPDF"
 					dependsOn="checkPDFVersion"
-					tool="jhove" 
+					tool="jhove_pdf" 
 					code="PDF Validation failed" 
 					xpathSelector="//jhove:repInfo/jhove:status"
 					regex="Well-Formed and valid"
 				/>
 				<check name="isValidEPUB"
 					dependsOn="isEPUB"
-					tool="jhove" 
+					tool="jhove_epub" 
 					code="EPUB Validation failed" 
 					xpathSelector="//jhove:repInfo/jhove:status"
 					regex="Well-Formed and valid"
@@ -181,8 +180,14 @@
 			<namespace name="jhove" uri="http://hul.harvard.edu/ois/xml/ns/jhove" />
 		</namespaces>
 		<tools>
-			<tool name="jhove" 
-				cmd="/usr/bin/jhove -h XML -o {pv.outputFile} {pv.inputFile}"
+			<tool name="jhove_pdf" 
+				cmd="/usr/bin/jhove -m PDF-hul -h XML -o {pv.outputFile} {pv.inputFile}"
+				stdout="false"
+				xmlNamespace ="jhove"
+			 />
+			 
+			<tool name="jhove_epub" 
+				cmd="/usr/bin/jhove -m EPUB-ptc -h XML -o {pv.outputFile} {pv.inputFile}"
 				stdout="false"
 				xmlNamespace ="jhove"
 			 />
@@ -193,7 +198,11 @@
 			<tool name="pdfinfo" 
 				cmd="/opt/digiverso/goobi/config/pdfinfogawk.sh {pv.inputFile}"
 				stdout="true"
-			 /> 			
+			 />
+			 <tool name="file" 
+				cmd="/opt/digiverso/goobi/config/filegawk.sh {pv.inputFile}"
+				stdout="true"
+			 /> 					
 		</tools>
 	</global>
 </config_plugin>
