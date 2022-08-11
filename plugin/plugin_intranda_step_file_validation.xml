@@ -182,7 +182,7 @@
 		</namespaces>
 		<tools>
 			<tool name="jhove" 
-				cmd="/usr/bin/jhove -h XML -m PDF-hul -o {pv.outputFile} {pv.inputFile}"
+				cmd="/usr/bin/jhove -h XML -o {pv.outputFile} {pv.inputFile}"
 				stdout="false"
 				xmlNamespace ="jhove"
 			 />
