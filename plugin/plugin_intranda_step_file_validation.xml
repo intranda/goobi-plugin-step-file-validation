@@ -17,7 +17,7 @@
 		<!-- name of the profile that shall be used by this config blog -->
 		<profileName>epubPdf</profileName>
 		<!--targetLevel that must be reached for a successful plugin run -->
-		<targetLevel>4</targetLevel>
+		<targetLevel>2</targetLevel>
 	<config>
 	</config>
 		<!-- which institution to use for (can be more then one, otherwise use *) -->
@@ -178,20 +178,20 @@
 			</level>
 		</profile>
 		<namespaces>
-			<namespace name="jhove" uri="http://schema.openpreservation.org/ois/xml/ns/jhove" />
+			<namespace name="jhove" uri="http://hul.harvard.edu/ois/xml/ns/jhove" />
 		</namespaces>
 		<tools>
 			<tool name="jhove" 
-				cmd="/opt/digiverso/tools/jhove/jhove -h XML -m PDF-hul -o {pv.outputFile} {pv.inputFile}"
+				cmd="/usr/bin/jhove -h XML -m PDF-hul -o {pv.outputFile} {pv.inputFile}"
 				stdout="false"
 				xmlNamespace ="jhove"
 			 />
 			<tool name="verapdf" 
-				cmd="/home/michael/verapdf/verapdf --format mrr {pv.inputFile}"
+				cmd="/opt/digiverso/verapdf/verapdf --format mrr {pv.inputFile}"
 				stdout="true"
 			 />
 			<tool name="pdfinfo" 
-				cmd="/opt/digiverso/tools/pdfinfogawk.sh {pv.inputFile}"
+				cmd="/opt/digiverso/goobi/config/pdfinfogawk.sh {pv.inputFile}"
 				stdout="true"
 			 /> 			
 		</tools>

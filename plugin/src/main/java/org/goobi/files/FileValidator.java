@@ -34,7 +34,7 @@ public class FileValidator {
         ConfigurationParser confParser = null;
         Report report = null;
         try {
-            confParser = new ConfigurationParser("intranda_step_pdf_validation", institution);
+            confParser = new ConfigurationParser("intranda_step_file_validation", institution);
         } catch (IllegalArgumentException ex) {
             log.error(ex);
             return null;
