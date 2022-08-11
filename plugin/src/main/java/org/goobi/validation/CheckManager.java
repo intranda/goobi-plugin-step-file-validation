@@ -223,10 +223,14 @@ public class CheckManager {
                     ReportEntry re = check.run(jdomDocument);
                     reportEntries.add(re);
                     if (re.getStatus() != CheckStatus.SUCCESS) {
-                        log("Check '" + check.getName() + "' failed! The Errormessage is " + check.getCode(), LogType.ERROR);
                         updateDependencies(check.getName());
                         if (groupFailed(check.getGroup(), checksGroupedByGroup)) {
-                            return new Report(reachedLevel, check.getCode(), fileName, reportEntries);
+                            Report reportOnAbort = new Report(reachedLevel, check.getCode(), fileName, reportEntries);
+                            log("Check '" + check.getName() + "' failed! The Errormessage is " + check.getCode(), LogType.ERROR);
+                            reportOnAbort.setReachedTargetLevel(reachedLevel >= targetLevel);
+                            return reportOnAbort;         
+                        } else {
+                            log("Check '" + check.getName() + "' failed! The Errormessage is " + check.getCode(), LogType.DEBUG);
                         }
                     }
                 }
