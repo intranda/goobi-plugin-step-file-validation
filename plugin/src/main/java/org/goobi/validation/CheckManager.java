@@ -24,7 +24,9 @@ import org.jdom2.input.SAXBuilder;
 
 import de.sub.goobi.helper.StorageProvider;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class CheckManager {
 
     private Map<String, ToolConfiguration> toolConfigurations;
@@ -170,6 +172,7 @@ public class CheckManager {
                 }
             } catch (IOException | JDOMException | InterruptedException e) {
                 log("A check failed because of an exception. error message: " + e.getMessage(), LogType.ERROR);
+                log.error("FileValidationPlugin: A Check failed because of an Exception", e);
                 report.setErrorMessage("Error running tool or reading report file");
                 report.setMetadataEntries(metadataEntries);
                 return report;
@@ -188,10 +191,11 @@ public class CheckManager {
      * @return Report-Object
      */
     public Report runChecks(int targetLevel, Path pathToFile) {
+        log.debug("FileValidationPlugin: Starting validation of {} target level is {}", pathToFile.getFileName().toString(), targetLevel);
         int reachedLevel = -1;
         int endCheckOnLevel = (runAllChecks) ? ingestLevelChecks.size() - 1 : targetLevel;
-        if (targetLevel > ingestLevelChecks.size()-1) {
-            endCheckOnLevel= ingestLevelChecks.size()-1;
+        if (targetLevel > ingestLevelChecks.size() - 1) {
+            endCheckOnLevel = ingestLevelChecks.size() - 1;
         }
         String fileName = pathToFile.getFileName().toString();
         SAXBuilder jdomBuilder = new SAXBuilder();
@@ -226,11 +230,14 @@ public class CheckManager {
                         updateDependencies(check.getName());
                         if (groupFailed(check.getGroup(), checksGroupedByGroup)) {
                             Report reportOnAbort = new Report(reachedLevel, check.getCode(), fileName, reportEntries);
-                            log("Check '" + check.getName() + "' failed! The Errormessage is " + check.getCode(), LogType.ERROR);
+                            log("Checks in group failed '" + check.getName() + "' failed! The error message is " + check.getCode(), LogType.ERROR);
+                            log.debug("FileValidationPlugin: Checks in group failed '" + check.getName() + "' failed! The error message is "
+                                    + check.getCode());
                             reportOnAbort.setReachedTargetLevel(reachedLevel >= targetLevel);
-                            return reportOnAbort;         
+                            return reportOnAbort;
                         } else {
-                            log("Check '" + check.getName() + "' failed! The Errormessage is " + check.getCode(), LogType.DEBUG);
+                            log("Check '" + check.getName() + "' failed! The error message is " + check.getCode(), LogType.DEBUG);
+                            log.debug("FileValidationPlugin: Check failed '" + check.getName() + "' failed! The error message is " + check.getCode());
                         }
                     }
                 }
@@ -238,12 +245,15 @@ public class CheckManager {
 
             } catch (IOException | JDOMException | InterruptedException e) {
                 log("A Check failed because of an Exception. ErrorMessage: " + e.getMessage(), LogType.ERROR);
+                log.error("FileValidationPlugin: A Check failed because of an Exception", e);
                 return new Report(reachedLevel, "Error running tool or reading report file", fileName, reportEntries);
             }
         }
         Report report = new Report(reachedLevel, null, fileName, reportEntries);
         if (reachedLevel >= targetLevel) {
             report.setReachedTargetLevel(true);
+            log.debug("FileValidationPlugin: Validation of file {} was successful reached level is {} target level: {} ",
+                    pathToFile.getFileName().toString(), reachedLevel, targetLevel);
         }
         return addReaderReport(endCheckOnLevel, pathToFile, report, jdomDocumentsByTool);
     }
@@ -264,7 +274,7 @@ public class CheckManager {
         }
         return checks.stream()
                 .allMatch(check -> check.getStatus() == CheckStatus.ERROR || check.getStatus() == CheckStatus.PREQUISITEFAILED
-                || check.getStatus() == CheckStatus.FAILED);
+                        || check.getStatus() == CheckStatus.FAILED);
     }
 
     public List<Report> runChecks(int targetLevel) throws IOException, InterruptedException {
