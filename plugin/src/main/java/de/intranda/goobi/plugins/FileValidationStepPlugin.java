@@ -93,10 +93,10 @@ public class FileValidationStepPlugin implements IStepPluginVersion2 {
         this.levelValueReaders = cParser.getIngestLevelReader();
 
         if (tools.size() > 0 && levelChecks.size() > 0) {
-            log.info("PdfValidation step plugin initialized");
+            log.info("fileValidation step plugin initialized");
         } else {
             log.info("Error initializing Plugin");
-            this.logger.message("Error reading Configuration File", LogType.DEBUG);
+            this.logger.message("Error reading configuration file", LogType.DEBUG);
         }
     }
 
@@ -141,9 +141,6 @@ public class FileValidationStepPlugin implements IStepPluginVersion2 {
         return ret != PluginReturnValue.ERROR;
     }
 
-
-
-
     @Override
     public PluginReturnValue run() {
         boolean successful = true;
@@ -161,14 +158,17 @@ public class FileValidationStepPlugin implements IStepPluginVersion2 {
             cManager.addLogger(this.logger);
             List<Report> reports = cManager.runChecks(cParser.getTargetLevel());
             if (reports.isEmpty()) {
-                this.logger.message("ERROR: No Report was created!", LogType.INFO);
+                this.logger.message("ERROR: No report was created!", LogType.INFO);
+                successful = false;
             }
             for (Report report : reports) {
                 if (report.getLevel() < cParser.getTargetLevel()) {
-                    this.logger.message("ERROR: The File " + report.getFileName() + " did not reach the required target level!", LogType.ERROR);
+                    this.logger.message("ERROR: The file " + report.getFileName() + " only reached level " + report.getLevel()
+                            + " the required target level of " + cParser.getTargetLevel() + "!", LogType.ERROR);
                     successful = false;
                 } else {
-                    this.logger.message("The File " + report.getFileName() + " reached the required target level!", LogType.INFO);
+                    this.logger.message("SUCCESS: The file " + report.getFileName() + " reached target level " + report.getLevel() + "! Level "
+                            + cParser.getTargetLevel() + " was required!", LogType.INFO);
                 }
             }
 
@@ -211,7 +211,7 @@ public class FileValidationStepPlugin implements IStepPluginVersion2 {
             logger.message("Error writing report to filesystem", LogType.DEBUG);
         } catch (ReadException e) {
             successful = false;
-            logger.message("Error opening Preferences" + e.getMessage(), LogType.DEBUG);
+            logger.message("Error opening preferences" + e.getMessage(), LogType.DEBUG);
         }
         log.info("PdfValidation step plugin executed");
         if (!successful) {

@@ -15,6 +15,6 @@ public class ProcessLogger implements LoggerInterface {
 
     @Override
     public void message(String msg, LogType severity) {
-        Helper.addMessageToProcessLog(process.getId(), severity, msg);
+        Helper.addMessageToProcessJournal(process.getId(), severity, "FileValidationPlugin: " + msg);
     }
 }

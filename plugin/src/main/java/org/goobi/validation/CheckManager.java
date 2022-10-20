@@ -38,6 +38,7 @@ public class CheckManager {
     private List<LoggerInterface> loggers = new ArrayList<>();
     private HashMap<String, List<Check>> checksGroupedByDependsOn = new LinkedHashMap<>();
     private boolean runAllChecks = false;
+    private String inputFolder = "";
 
     private CheckManager(Map<String, ToolConfiguration> toolsConfigurations, List<List<Check>> ingestLevelChecks,
             List<List<ValueReader>> ingestLevelReaders, String outputPath) {
@@ -69,6 +70,7 @@ public class CheckManager {
                 return false;
             }
         }));
+        this.inputFolder = inputFolder;
     }
 
     /**
@@ -172,7 +174,7 @@ public class CheckManager {
                 }
             } catch (IOException | JDOMException | InterruptedException e) {
                 log("A check failed because of an exception. error message: " + e.getMessage(), LogType.ERROR);
-                log.error("FileValidationPlugin: A Check failed because of an Exception", e);
+                log.error("FileValidationPlugin: A check failed because of an Exception", e);
                 report.setErrorMessage("Error running tool or reading report file");
                 report.setMetadataEntries(metadataEntries);
                 return report;
@@ -244,8 +246,8 @@ public class CheckManager {
                 reachedLevel = level;
 
             } catch (IOException | JDOMException | InterruptedException e) {
-                log("A Check failed because of an Exception. ErrorMessage: " + e.getMessage(), LogType.ERROR);
-                log.error("FileValidationPlugin: A Check failed because of an Exception", e);
+                log("A check failed because of an exception. ErrorMessage: " + e.getMessage(), LogType.ERROR);
+                log.error("FileValidationPlugin: A check failed because of an exception", e);
                 return new Report(reachedLevel, "Error running tool or reading report file", fileName, reportEntries);
             }
         }
@@ -281,6 +283,11 @@ public class CheckManager {
         List<Report> reports = new ArrayList<>();
         for (Path pdfFile : this.pdfsInFolder) {
             reports.add(runChecks(targetLevel, pdfFile));
+        }
+
+        if (this.pdfsInFolder.isEmpty()) {
+            log("ERROR: There are no files in the specified inputFolder: " + this.inputFolder, LogType.ERROR);
+            log.error("FileValidationPlugin: ERROR: There are no files in the specified inputFolder: {}", this.inputFolder);
         }
         return reports;
     }
