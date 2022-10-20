@@ -286,8 +286,8 @@ public class CheckManager {
         }
 
         if (this.pdfsInFolder.isEmpty()) {
-            log("ERROR: There are no files in the specified inputFolder: " + this.inputFolder, LogType.ERROR);
-            log.error("FileValidationPlugin: ERROR: There are no files in the specified inputFolder: {}", this.inputFolder);
+            log("ERROR: There are no files in the configured inputFolder: " + this.inputFolder, LogType.ERROR);
+            log.error("FileValidationPlugin: ERROR: There are no files in the configured inputFolder: {}", this.inputFolder);
         }
         return reports;
     }

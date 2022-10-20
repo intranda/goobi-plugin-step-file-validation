@@ -151,9 +151,9 @@ public class MetadataWriter {
 
         PropertyManager.saveProcessProperty(property);
         if (StringUtils.isBlank(entry.getValue())) {
-            log("An Empty Value was added for the Process Property: " + entry.getProcessProperty(), LogType.DEBUG);
+            log("An empty value was added for the process property: " + entry.getProcessProperty(), LogType.DEBUG);
         } else {
-            log("The Value: " + entry.getValue() + " was added for the Process Property: " + entry.getProcessProperty(), LogType.INFO);
+            log("The value: " + entry.getValue() + " was added for the process property: " + entry.getProcessProperty(), LogType.INFO);
         }
 
     }
@@ -174,7 +174,7 @@ public class MetadataWriter {
 
             process.writeMetadataFile(ff);
         } catch (ReadException | PreferencesException | WriteException | IOException | SwapException e) {
-            throw new MetadataWriterException("Error opening Metadatfile or getting logical Docstruct", e);
+            throw new MetadataWriterException("Error opening metadata file or getting logical DocStruct", e);
         }
 
         addMetadata(ds, entry.getMets(), entry.getValue());
@@ -192,7 +192,7 @@ public class MetadataWriter {
             metadatata.setValue(value);
             ds.addMetadata(metadatata);
         } catch (MetadataTypeNotAllowedException e) {
-            log("Error: metadata type " + metsField + " is not allowed for the TopStruct. Please update ruleset or the configuration file.",
+            log("Error: metadata type " + metsField + " is not allowed for the topStruct. Please update ruleset or the configuration file.",
                     LogType.ERROR);
         }
     }
