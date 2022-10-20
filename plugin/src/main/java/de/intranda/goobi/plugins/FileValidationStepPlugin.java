@@ -213,7 +213,7 @@ public class FileValidationStepPlugin implements IStepPluginVersion2 {
             successful = false;
             logger.message("Error opening preferences" + e.getMessage(), LogType.DEBUG);
         }
-        log.info("PdfValidation step plugin executed");
+        log.info("FileValidation step plugin executed");
         if (!successful) {
             return PluginReturnValue.ERROR;
         }
