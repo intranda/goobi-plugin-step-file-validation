@@ -65,19 +65,20 @@ import ugh.exceptions.ReadException;
 @Log4j2
 public class FileValidationStepPlugin implements IStepPluginVersion2 {
 
+    private static final long serialVersionUID = -3445793682856115903L;
     @Getter
     private String title = "intranda_step_file_validation";
     @Getter
     private Step step;
     @Getter
     private String value;
-    private LoggerInterface logger;
+    private transient LoggerInterface logger;
     private String returnPath;
-    private List<List<Check>> levelChecks;
-    private List<List<ValueReader>> levelValueReaders;
-    private HashMap<String, ToolConfiguration> tools;
+    private transient List<List<Check>> levelChecks;
+    private transient List<List<ValueReader>> levelValueReaders;
+    private transient HashMap<String, ToolConfiguration> tools;
     private Process process;
-    private ConfigurationParser cParser;
+    private transient ConfigurationParser cParser;
 
     @Override
     public void initialize(Step step, String returnPath) {
@@ -92,7 +93,7 @@ public class FileValidationStepPlugin implements IStepPluginVersion2 {
         this.levelChecks = cParser.getIngestLevelChecks();
         this.levelValueReaders = cParser.getIngestLevelReader();
 
-        if (tools.size() > 0 && levelChecks.size() > 0) {
+        if (!tools.isEmpty() && !levelChecks.isEmpty()) {
             log.info("fileValidation step plugin initialized");
         } else {
             log.info("Error initializing Plugin");
@@ -164,7 +165,7 @@ public class FileValidationStepPlugin implements IStepPluginVersion2 {
             for (Report report : reports) {
                 if (report.getLevel() < cParser.getTargetLevel()) {
                     this.logger.message("ERROR: The file " + report.getFileName() + " only reached level " + report.getLevel()
-                            + " the required target level of " + cParser.getTargetLevel() + "!", LogType.ERROR);
+                    + " the required target level of " + cParser.getTargetLevel() + "!", LogType.ERROR);
                     successful = false;
                 } else {
                     this.logger.message("SUCCESS: The file " + report.getFileName() + " reached target level " + report.getLevel() + "! Level "

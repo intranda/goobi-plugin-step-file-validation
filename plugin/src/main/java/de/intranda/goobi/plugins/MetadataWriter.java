@@ -153,7 +153,7 @@ public class MetadataWriter {
         if (StringUtils.isBlank(entry.getValue())) {
             log("An empty value was added for the process property: " + entry.getProcessProperty(), LogType.DEBUG);
         } else {
-            log("The value: " + entry.getValue() + " was added for the process property: " + entry.getProcessProperty(), LogType.INFO);
+            log("The value: " + entry.getValue() + " was added for the process property: " + entry.getProcessProperty(), LogType.DEBUG);
         }
 
     }
