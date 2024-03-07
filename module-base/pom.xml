@@ -2,9 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.goobi.workflow.plugin</groupId>
-    <artifactId>plugin-step-file_validation</artifactId>
+    <artifactId>plugin-step-file-validation</artifactId>
     <version>24.03-SNAPSHOT</version>
   </parent>
-  <artifactId>plugin-step-file_validation-base</artifactId>
+  <artifactId>plugin-step-file-validation-base</artifactId>
   <packaging>jar</packaging>
 </project>
