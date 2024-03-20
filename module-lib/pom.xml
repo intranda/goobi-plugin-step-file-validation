@@ -5,14 +5,6 @@
     <artifactId>plugin-step-file-validation</artifactId>
     <version>24.03-SNAPSHOT</version>
   </parent>
-  <artifactId>plugin-step-file-validation-base</artifactId>
+  <artifactId>plugin-step-file-validation-lib</artifactId>
   <packaging>jar</packaging>
-  <dependencies>
-    <dependency>
-      <groupId>io.goobi.workflow.plugin</groupId>
-      <artifactId>plugin-step-file-validation-lib</artifactId>
-      <version>24.03-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-  </dependencies>
 </project>
