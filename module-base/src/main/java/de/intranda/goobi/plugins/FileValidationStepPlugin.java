@@ -26,10 +26,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-
 import org.goobi.beans.Process;
 import org.goobi.beans.Step;
 import org.goobi.configuration.ConfigurationParser;
@@ -53,6 +49,9 @@ import de.sub.goobi.helper.StorageProviderInterface;
 import de.sub.goobi.helper.VariableReplacer;
 import de.sub.goobi.helper.exceptions.SwapException;
 import de.sub.goobi.persistence.managers.ProcessManager;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
@@ -165,7 +164,7 @@ public class FileValidationStepPlugin implements IStepPluginVersion2 {
             for (Report report : reports) {
                 if (report.getLevel() < cParser.getTargetLevel()) {
                     this.logger.message("ERROR: The file " + report.getFileName() + " only reached level " + report.getLevel()
-                    + " the required target level of " + cParser.getTargetLevel() + "!", LogType.ERROR);
+                            + " the required target level of " + cParser.getTargetLevel() + "!", LogType.ERROR);
                     successful = false;
                 } else {
                     this.logger.message("SUCCESS: The file " + report.getFileName() + " reached target level " + report.getLevel() + "! Level "

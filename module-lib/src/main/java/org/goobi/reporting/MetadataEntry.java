@@ -1,13 +1,12 @@
 package org.goobi.reporting;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
-
 import org.goobi.validation.Check;
 import org.goobi.validation.CheckStatus;
 import org.goobi.validation.ValueReader;
 
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,8 +24,7 @@ public class MetadataEntry extends ReportEntry {
 
     public MetadataEntry(Check valueReader) {
         super(valueReader);
-        if (valueReader instanceof ValueReader) {
-            ValueReader vr = (ValueReader) valueReader;
+        if (valueReader instanceof ValueReader vr) {
             this.message = (status != CheckStatus.SUCCESS) ? valueReader.getCode() : "Value retrieved!";
             this.processProperty = vr.getProcessProperty();
             this.mets = vr.getMets();
