@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.goobi.beans.GoobiProperty;
+import org.goobi.beans.GoobiProperty.PropertyOwnerType;
 import org.goobi.beans.Process;
-import org.goobi.beans.Processproperty;
 import org.goobi.logging.LoggerInterface;
 import org.goobi.production.enums.LogType;
 import org.goobi.reporting.MetadataEntry;
@@ -133,23 +134,23 @@ public class MetadataWriter {
     }
 
     private void writeProcessProperty(MetadataEntry entry) {
-        Processproperty property = null;
-        for (Processproperty pp : process.getEigenschaften()) {
-            if (pp.getTitel().equals(entry.getProcessProperty())) {
+        GoobiProperty property = null;
+        for (GoobiProperty pp : process.getProperties()) {
+            if (pp.getPropertyName().equals(entry.getProcessProperty())) {
                 property = pp;
-                property.setWert(entry.getValue());
+                property.setPropertyValue(entry.getValue());
                 break;
             }
         }
 
         if (property == null) {
-            property = new Processproperty();
-            property.setTitel(entry.getProcessProperty());
-            property.setWert(entry.getValue());
-            property.setProzess(this.process);
+            property = new GoobiProperty(PropertyOwnerType.PROCESS);
+            property.setPropertyName(entry.getProcessProperty());
+            property.setPropertyValue(entry.getValue());
+            property.setOwner(process);
         }
 
-        PropertyManager.saveProcessProperty(property);
+        PropertyManager.saveProperty(property);
         if (StringUtils.isBlank(entry.getValue())) {
             log("An empty value was added for the process property: " + entry.getProcessProperty(), LogType.DEBUG);
         } else {
