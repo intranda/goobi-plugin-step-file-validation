@@ -261,7 +261,7 @@ Das `config_plugin`-Element kann zwei Kindelementtypen haben: `config` und `glob
 | :--- | :--- |
 | `project` | Dieser Parameter legt fest, für welches Projekt der aktuelle Block `<config>` gelten soll. Verwendet wird hierbei der Name des Projektes. Dieser Parameter kann mehrfach pro `<config>` Block vorkommen. |
 | `step` | Dieser Parameter steuert, für welche Arbeitsschritte der Block `<config>` gelten soll. Verwendet wird hier der Name des Arbeitsschritts. Dieser Parameter kann mehrfach pro `<config>` Block vorkommen. |
-| `institution` | Dieser Parameter steuert im Rahmen des Dashboard-delivery, für welche Einrichtung der Block <config> gelten soll. Verwendet wird hier der Name der Einrichtung. Dieser Parameter kann mehrfach pro <config> Block vorkommen. |
+| `institution` | Dieser Parameter steuert im Rahmen des Dashboard-delivery, für welche Einrichtung der Block `<config>` gelten soll. Verwendet wird hier der Name der Einrichtung. Dieser Parameter kann mehrfach pro `<config>` Block vorkommen. |
 | `inputFolder` | Hier muss spezifiziert werden, wo sich die Dokumente befinden, die geprüft werden sollen. Bei der Angabe können Goobivariablen wie `{processpath}` verwendet werden.  |
 | `outputFolder` | Hier muss spezifiziert werden, wo sich die Berichte, die von den Werkzeugen (`tools`) erzeugt werden, gespeichert werden sollen. Bei der Angabe können Goobivariablen wie `{processpath}` verwendet werden. |
 | `fileFilter` | Hier kann ein regulärer Ausdruck formuliert werden, um anhand des Dateinamens (i.d.R. die Dateiendung) einzugrenzen, welche Dateien geprüft werden sollen. |
