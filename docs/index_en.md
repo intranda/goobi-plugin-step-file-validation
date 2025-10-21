@@ -3,6 +3,10 @@ title: File validation
 identifier: intranda_step_file_validation
 published: true
 description: This step plugin for Goobi workflow performs configurable validation of files
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Step Plugin
 ---
 ## Introduction
 This documentation describes the installation, configuration and use of the Step Plugin for validation with configurable checking profiles.
