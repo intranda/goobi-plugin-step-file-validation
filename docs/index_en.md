@@ -52,9 +52,9 @@ The configuration of the plugin is done via the configuration file `plugin_intra
 		4.) project name and step name are * -->
 
 	<config>
-		<!-- which projects to use for (can be more then one, otherwise use *) -->
+		<!-- which projects to use for (can be more than one, otherwise use *) -->
 		<project>*</project>
-		<!-- which stepss to use for (can be more then one, otherwise use *) -->
+		<!-- which steps to use for (can be more than one, otherwise use *) -->
 		<step>*</step>
 		<!-- input folder where the documents are located, is only used in the STEP-Plugin -->
 		<inputFolder>{processpath}/pdf</inputFolder>
@@ -62,13 +62,13 @@ The configuration of the plugin is done via the configuration file `plugin_intra
 		<outputFolder>{processpath}/validation</outputFolder>
 		<!-- fileFilter: regex-Pattern that allows to filter by filename and fileextension -->
 		<fileFilter>(?i).*\.pdf|.*\.epub</fileFilter>
-		<!-- name of the profile that shall be used by this config blog -->
+		<!-- name of the profile that shall be used by this config block -->
 		<profileName>epubPdf</profileName>
 		<!--targetLevel that must be reached for a successful plugin run -->
 		<targetLevel>2</targetLevel>
 	<config>
 	</config>
-		<!-- which institution to use for (can be more then one, otherwise use *) -->
+		<!-- which institution to use for (can be more than one, otherwise use *) -->
 		<institution>*</institution>
 		<profileName>epubPdf</profileName>
 		<targetLevel>0</targetLevel>
@@ -93,7 +93,7 @@ The configuration of the plugin is done via the configuration file `plugin_intra
 			group:  checks can be grouped. grouped checks are OR-operated which means, that the level won't fail if one check
 				of the group is successful. ( i.e. check for isPDF-A and isPDFx in one level)
 			code:	Errorcode or Errormessage that shall be displayed when the check fails /regex doesn't match node does not exist
-			xpathSelector: xpathSelector to selct the node or attribute value
+			xpathSelector: xpathSelector to select the node or attribute value
 			regex:	regular expression that will be matched with the read value, if no regular expression is
 				provided the check will only test if the node exists.
 			namespace: (only needed if the specified check uses another namespace than the tool and if
@@ -105,14 +105,14 @@ The configuration of the plugin is done via the configuration file `plugin_intra
 					a setValue-Element can only depend on a check not on other setValue Elements. set value Elements will always be
 					executed after the checks.
 					the parameter is mandatory
-			tool:	name of the tool that must have ben executed to create the report
-			code:	Errorcode or Errormessage that shall be displayed when value retrival fails.
-			xpathSelector: xpathSelector to selct an attribute value
+			tool:	name of the tool that must have been executed to create the report
+			code:	Errorcode or Errormessage that shall be displayed when value retrieval fails.
+			xpathSelector: xpathSelector to select an attribute value
 			namespace: (only needed if the specified setValue-Element uses another namespace than the tool and if
 					namespaces are used)
 
 		a tools element contains multiple tool elements
-		a tool element hast the attributes
+		a tool element has the attributes
 			name:		name of the tool
 			cmd:		the command that must be run to create the xml report. you can use the {pv.outputFile} variable to refer to
 			stdout:		if stdout is true, the reportfile will be generated from the commandline output of the file. if it is set to false
@@ -346,7 +346,7 @@ LoremIpsum-a3b.pdf: PDF document, version 1.6
 Instead of calling the tool directly, one would now create a shell script with the following content and store it in the `cmd` attribute of the tool:
 
 ```bash
-file $1 | gawk -f {absoluter pfad zum awk-script} | xmllint --format -
+file $1 | gawk -f {absolute path to awk-script} | xmllint --format -
 ```
 
 If we only need the second parameter from the output of the `file` command, the (g)awk script could look like this:
@@ -393,9 +393,9 @@ Complete example of plugin configuration within the file `plugin_intranda_step_f
 		is * 4.) project name and step name are * -->
 		
 	<config>
-		<!-- which projects to use for (can be more then one, otherwise use *) -->
+		<!-- which projects to use for (can be more than one, otherwise use *) -->
 		<project>*</project>
-		<!-- which stepss to use for (can be more then one, otherwise use *) -->
+		<!-- which steps to use for (can be more than one, otherwise use *) -->
 		<step>*</step>
 		<!-- input folder where the documents are located, is only used in the STEP-Plugin -->
 		<inputFolder>/opt/digiverso/pdf</inputFolder>
@@ -403,13 +403,13 @@ Complete example of plugin configuration within the file `plugin_intranda_step_f
 		<outputFolder>{processpath}/validation</outputFolder>
 		<!-- fileFilter: regex-Pattern that allows to filter by filename and fileextension -->
 		<fileFilter>(?i).*\.pdf|.*\.epub</fileFilter>
-		<!-- name of the profile that shall be used by this config blog -->
+		<!-- name of the profile that shall be used by this config block -->
 		<profileName>epubPdf</profileName>
 		<!--targetLevel that must be reached for a successful plugin run -->
 		<targetLevel>4</targetLevel>
 	<config>
 	</config>
-		<!-- which institution to use for (can be more then one, otherwise use *) -->
+		<!-- which institution to use for (can be more than one, otherwise use *) -->
 		<institution>*</institution>
 		<profileName>epubPdf</profileName>
 		<targetLevel>0</targetLevel>
@@ -433,7 +433,7 @@ Complete example of plugin configuration within the file `plugin_intranda_step_f
 			group:  checks can be grouped. grouped checks are OR-operated which means, that the level won't fail if one check
 				of the group is successful. ( i.e. check for isPDF-A and isPDFx in one level)
 			code:	Errorcode or Errormessage that shall be displayed when the check fails /regex doesn't match node does not exist
-			xpathSelector: xpathSelector to selct the node or attribute value
+			xpathSelector: xpathSelector to select the node or attribute value
 			regex:	regular expression that will be matched with the read value, if no regular expression is
 				provided the check will only test if the node exists.
 			namespace: (only needed if the specified check uses another namespace than the tool and if 
@@ -445,14 +445,14 @@ Complete example of plugin configuration within the file `plugin_intranda_step_f
 					a setValue-Element can only depend on a check not on other setValue Elements. set value Elements will always be 
 					executed after the checks.
 					the parameter is mandatory
-			tool:	name of the tool that must have ben executed to create the report
-			code:	Errorcode or Errormessage that shall be displayed when value retrival fails.
-			xpathSelector: xpathSelector to selct an attribute value
+			tool:	name of the tool that must have been executed to create the report
+			code:	Errorcode or Errormessage that shall be displayed when value retrieval fails.
+			xpathSelector: xpathSelector to select an attribute value
 			namespace: (only needed if the specified setValue-Element uses another namespace than the tool and if 
 					namespaces are used)
 					
 		a tools element contains multiple tool elements
-		a tool element hast the attributes
+		a tool element has the attributes
 			name:		name of the tool
 			cmd:		the command that must be run to create the xml report. you can use the {pv.outputFile} variable to refer to 
 			stdout:		if stdout is true, the reportfile will be generated from the commandline output of the file. if it is set to false 

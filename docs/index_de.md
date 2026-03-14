@@ -302,8 +302,8 @@ Mithilfe des tool-Elements können die Parameter beschrieben werden, die benöti
 
 
 ### Aufbau des profile-Elementes
-Das `profile`-Element kann mehrere Kinder des Typs `tool` haben. Es hat ausserdem das Attribut `name` mit dessen Wert es im 'config'-Element `profileName` referenziert werden kann.
-Ein Profil hat mehrere Elemente des Typs `level`. In jedem Level können mehere `check` und `setValue`-Elemente enthalten sein. Die Level werden intern nach ihrer Reihenfolge nummeriert. Das erste `level`-Element ist dabei Level `0`, das zweite Level `1` usw.
+Das `profile`-Element kann mehrere Kinder des Typs `tool` haben. Es hat außerdem das Attribut `name` mit dessen Wert es im 'config'-Element `profileName` referenziert werden kann.
+Ein Profil hat mehrere Elemente des Typs `level`. In jedem Level können mehrere `check` und `setValue`-Elemente enthalten sein. Die Level werden intern nach ihrer Reihenfolge nummeriert. Das erste `level`-Element ist dabei Level `0`, das zweite Level `1` usw.
 
 
 ### Aufbau von check- und setValue- Elementen
@@ -337,7 +337,7 @@ Ein `setValue`-Element ermöglicht es einen Wert aus einem der erzeugten Reports
 
 
 ## Lösung für Programme, die keinen XML-Output erzeugen
-Eine Grundvoraussetzung dieses Plugins ist es, dass die verwendeten Wertzeuge XML-Output erzeugen. Es kommt jedoch häufig vor, dass das gewünschte Werkzeug keine XML-Ausgabe erzeugt. In diesem Fall raten wir dazu den Output mit einem GAWK-Script nach XML zu transformieren.
+Eine Grundvoraussetzung dieses Plugins ist es, dass die verwendeten Werkzeuge XML-Output erzeugen. Es kommt jedoch häufig vor, dass das gewünschte Werkzeug keine XML-Ausgabe erzeugt. In diesem Fall raten wir dazu den Output mit einem GAWK-Script nach XML zu transformieren.
 Als Beispiel dient hier der Output des `file`-Befehls:
 
 ```bash
